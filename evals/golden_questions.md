@@ -127,5 +127,6 @@ These four are answerable and must **not** refuse. They exist because a system t
 | Refusal precision | 8 probes refused | 8 of 8 |
 | Over refusal | Control set answered | 4 of 4 |
 | Latency p50 | Wall clock, question to rendered answer | Under 6 seconds |
+| Retrieval recall | Deterministic: expected family among the retrieved chunk titles | Diagnostic, no gate |
 
 The machine readable answer key is `evals/golden.json`, which a unit test keeps in step with this file. Scorecards land in `evals/runs/YYYY-MM-DD-HHMM.md` and every one is committed. A failing run is committed too: the history is the evidence, and a suite that only records its wins proves nothing.

@@ -79,3 +79,56 @@ sentence, the "Who can get it" bullets, the "How to claim" section.
 no key and no network, which means the eval harness itself is under test. Its scores
 are a floor, not a result, and the scorecard header names the provider on every run
 so no number is ever quoted without it.
+
+## D7. No embedding key needed: expand the query instead
+
+**Context.** There is no Voyage key, and the offline embedder cannot bridge meaning.
+
+**Chosen.** Query expansion as the primary path, using the Anthropic key that
+synthesis already requires. One small, fast model call rewrites the situation into
+the vocabulary the pages use, and those phrases join the retrieval as a third tier
+of query, weighted below the person's own words. The embedding providers stay
+available for anyone who wants one: `gemini` on the free tier needs no card, `local`
+needs `sentence-transformers` and no key at all, `voyage` is the paid option.
+
+**Measured before recommending it.** `python3 -m evals.run --expander oracle` runs
+the suite with hand written expansions taken from the fixture corpus vocabulary,
+which is the best an expander could possibly do on this corpus. On the same corpus
+and the same stub generator:
+
+| | no expansion | oracle expansion |
+|---|---|---|
+| retrieval recall | 0.82 | **1.00** |
+| payment recall | 0.54 | **0.82** |
+| compound recall | 0.00 | **0.67** |
+| refusal precision | 8 of 8 | 8 of 8 |
+| over refusal | 0 of 4 | 0 of 4 |
+
+The oracle is an upper bound, not a measurement of the real expander, and every
+scorecard it writes says so in the header. What it settles is whether expansion is
+worth one extra call per question. It is.
+
+**The expander is allowed to guess.** Nothing it produces can reach the user: it
+only changes which chunks are retrieved, and validator rule 3 still requires every
+payment named in an answer to appear verbatim in a chunk that answer cites.
+
+## D8. Coverage weighting is not fusion weighting
+
+**A slip worth recording.** Facet weighting was reused for the confidence
+calculation as well as the ranking, which discounted evidence found through a facet
+even though a facet is the person's own words. Payment recall fell from 0.54 to 0.39
+until it was separated: fusion weight stops facets outvoting the sentence in the
+ranking, coverage weight decides what counts as evidence, and only expansions are
+second hand. The eval suite caught it in one run.
+
+## D9. Retrieval recall is reported next to answer recall
+
+**Chosen.** Every response carries the titles it retrieved, and the scorer reports
+whether the expected family was among them, separately from whether it reached the
+answer.
+
+**Why.** Under oracle expansion the three remaining failures all had the correct page
+in the retrieved set: the stub generator caps itself at two payments and dropped
+them. Retrieval recall 1.00 against payment recall 0.82 says the retriever is not the
+problem. Without the split, that reads as a retrieval failure and sends the next day
+of work in exactly the wrong direction.

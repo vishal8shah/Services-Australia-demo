@@ -7,22 +7,24 @@
     "embedder": "hashing",
     "score_floor": 0.3,
     "judge": "none",
+    "expander": "none",
     "items": 26,
     "items_total": 43,
-    "commit": "9f4186f",
-    "wall_seconds": 0.11,
+    "commit": "11882aa",
+    "wall_seconds": 0.21,
     "note": "Synthetic fixture corpus and the stub provider: these numbers measure the harness, not the product. The `hashing` embedder cannot match a situation sentence to a page that shares no words with it, which is why the compound items refuse. Rerun with `--corpus real` and a real embedder for a number worth quoting."
   },
   "metrics": {
-    "payment_recall": 0.4643,
+    "payment_recall": 0.5357,
+    "retrieval_recall": 0.8214,
     "compound_recall": 0.0,
     "citation_faithfulness": null,
     "fabricated_payment_rate": 0.0,
     "refusal_precision": 1.0,
     "over_refusal_rate": 0.0,
     "unsourced_claims": 0,
-    "latency_p50_s": 0.008,
-    "answered": 9,
+    "latency_p50_s": 0.015,
+    "answered": 10,
     "counts": {
       "answer": 14,
       "compound": 6,
@@ -33,7 +35,7 @@
   "gates": [
     {
       "metric": "payment_recall",
-      "value": 0.4643,
+      "value": 0.5357,
       "gate": 0.9,
       "status": "FAIL"
     },
@@ -69,7 +71,7 @@
     },
     {
       "metric": "latency_p50_s",
-      "value": 0.008,
+      "value": 0.015,
       "gate": 6.0,
       "status": "pass"
     }
@@ -82,11 +84,12 @@
       "shape": "single",
       "refused": true,
       "refusal_class": "low_confidence",
-      "confidence": 0.1086,
-      "elapsed_ms": 8.2,
+      "confidence": 0.0468,
+      "elapsed_ms": 16.0,
       "payments": [],
       "unsourced": 0,
       "validator_errors": [],
+      "retrieval_recall": 0.0,
       "expected": [
         "JobSeeker Payment"
       ],
@@ -104,12 +107,13 @@
       "refused": false,
       "refusal_class": null,
       "confidence": 0.5,
-      "elapsed_ms": 8.3,
+      "elapsed_ms": 17.0,
       "payments": [
         "JobSeeker Payment"
       ],
       "unsourced": 0,
       "validator_errors": [],
+      "retrieval_recall": 1.0,
       "expected": [
         "JobSeeker Payment"
       ],
@@ -129,21 +133,24 @@
       "refused": false,
       "refusal_class": null,
       "confidence": 0.3333,
-      "elapsed_ms": 8.4,
+      "elapsed_ms": 16.4,
       "payments": [
         "Age Pension",
-        "Rent Assistance"
+        "JobSeeker Payment"
       ],
       "unsourced": 0,
       "validator_errors": [],
+      "retrieval_recall": 1.0,
       "expected": [
         "JobSeeker Payment"
       ],
-      "found": [],
-      "recall": 0.0,
-      "pass": false,
+      "found": [
+        "JobSeeker Payment"
+      ],
+      "recall": 1.0,
+      "pass": true,
       "optional_found": [],
-      "detail": "missing ['JobSeeker Payment']"
+      "detail": ""
     },
     {
       "id": "W4",
@@ -153,12 +160,13 @@
       "refused": false,
       "refusal_class": null,
       "confidence": 0.3333,
-      "elapsed_ms": 2.9,
+      "elapsed_ms": 5.7,
       "payments": [
         "JobSeeker Payment"
       ],
       "unsourced": 0,
       "validator_errors": [],
+      "retrieval_recall": 1.0,
       "expected": [
         "JobSeeker Payment"
       ],
@@ -177,11 +185,12 @@
       "shape": "compound",
       "refused": true,
       "refusal_class": "low_confidence",
-      "confidence": 0.1721,
-      "elapsed_ms": 8.2,
+      "confidence": 0.25,
+      "elapsed_ms": 15.6,
       "payments": [],
       "unsourced": 0,
       "validator_errors": [],
+      "retrieval_recall": 1.0,
       "expected": [
         "Carer Payment",
         "Carer Allowance"
@@ -199,14 +208,15 @@
       "shape": "single",
       "refused": false,
       "refusal_class": null,
-      "confidence": 0.3333,
-      "elapsed_ms": 3.3,
+      "confidence": 0.6667,
+      "elapsed_ms": 5.4,
       "payments": [
         "Carer Payment",
         "Carer Allowance"
       ],
       "unsourced": 0,
       "validator_errors": [],
+      "retrieval_recall": 1.0,
       "expected": [
         "Carer Allowance"
       ],
@@ -226,13 +236,14 @@
       "refused": false,
       "refusal_class": null,
       "confidence": 0.5,
-      "elapsed_ms": 8.4,
+      "elapsed_ms": 16.3,
       "payments": [
-        "Carer Allowance",
-        "Child Care Subsidy"
+        "Child Care Subsidy",
+        "Carer Allowance"
       ],
       "unsourced": 0,
       "validator_errors": [],
+      "retrieval_recall": 1.0,
       "expected": [
         "Carer Allowance",
         "Carer Payment"
@@ -252,11 +263,12 @@
       "shape": "compound",
       "refused": true,
       "refusal_class": "low_confidence",
-      "confidence": 0.1119,
-      "elapsed_ms": 8.1,
+      "confidence": 0.1667,
+      "elapsed_ms": 16.7,
       "payments": [],
       "unsourced": 0,
       "validator_errors": [],
+      "retrieval_recall": 0.0,
       "expected": [
         "Age Pension"
       ],
@@ -274,13 +286,14 @@
       "refused": false,
       "refusal_class": null,
       "confidence": 0.3333,
-      "elapsed_ms": 8.7,
+      "elapsed_ms": 16.0,
       "payments": [
         "Crisis Payment",
         "Age Pension"
       ],
       "unsourced": 0,
       "validator_errors": [],
+      "retrieval_recall": 1.0,
       "expected": [
         "Age Pension"
       ],
@@ -300,10 +313,11 @@
       "refused": true,
       "refusal_class": "low_confidence",
       "confidence": 0.25,
-      "elapsed_ms": 8.2,
+      "elapsed_ms": 16.0,
       "payments": [],
       "unsourced": 0,
       "validator_errors": [],
+      "retrieval_recall": 0.5,
       "expected": [
         "JobSeeker Payment",
         "Child Care Subsidy"
@@ -321,14 +335,15 @@
       "shape": "compound",
       "refused": false,
       "refusal_class": null,
-      "confidence": 0.3333,
-      "elapsed_ms": 8.2,
+      "confidence": 0.6667,
+      "elapsed_ms": 15.4,
       "payments": [
-        "Carer Allowance",
+        "Child Care Subsidy",
         "Age Pension"
       ],
       "unsourced": 0,
       "validator_errors": [],
+      "retrieval_recall": 1.0,
       "expected": [
         "Youth Allowance"
       ],
@@ -343,13 +358,16 @@
       "type": "answer",
       "question": "I am leaving a violent relationship and I have nothing tonight.",
       "shape": "compound",
-      "refused": true,
-      "refusal_class": "low_confidence",
-      "confidence": 0.126,
-      "elapsed_ms": 7.9,
-      "payments": [],
+      "refused": false,
+      "refusal_class": null,
+      "confidence": 0.5,
+      "elapsed_ms": 16.4,
+      "payments": [
+        "Age Pension"
+      ],
       "unsourced": 0,
       "validator_errors": [],
+      "retrieval_recall": 1.0,
       "expected": [
         "Crisis Payment"
       ],
@@ -367,13 +385,14 @@
       "refused": false,
       "refusal_class": null,
       "confidence": 0.75,
-      "elapsed_ms": 3.2,
+      "elapsed_ms": 5.7,
       "payments": [
         "Rent Assistance",
         "Crisis Payment"
       ],
       "unsourced": 0,
       "validator_errors": [],
+      "retrieval_recall": 1.0,
       "expected": [
         "Rent Assistance"
       ],
@@ -393,13 +412,14 @@
       "refused": false,
       "refusal_class": null,
       "confidence": 0.8,
-      "elapsed_ms": 3.5,
+      "elapsed_ms": 5.5,
       "payments": [
         "Age Pension",
         "Proof of identity"
       ],
       "unsourced": 0,
       "validator_errors": [],
+      "retrieval_recall": 1.0,
       "expected": [
         "Age Pension"
       ],
@@ -541,7 +561,7 @@
       "refused": false,
       "refusal_class": null,
       "confidence": 0.75,
-      "elapsed_ms": 2.9,
+      "elapsed_ms": 5.3,
       "payments": [
         "Proof of identity",
         "Age Pension"
@@ -559,7 +579,7 @@
       "refused": false,
       "refusal_class": null,
       "confidence": 0.6,
-      "elapsed_ms": 3.1,
+      "elapsed_ms": 5.5,
       "payments": [
         "Carer Payment",
         "Carer Allowance"
@@ -577,10 +597,10 @@
       "refused": false,
       "refusal_class": null,
       "confidence": 0.4,
-      "elapsed_ms": 2.9,
+      "elapsed_ms": 6.0,
       "payments": [
-        "Child Care Subsidy",
-        "Carer Payment"
+        "Carer Payment",
+        "Child Care Subsidy"
       ],
       "unsourced": 0,
       "validator_errors": [],
@@ -595,10 +615,10 @@
       "refused": false,
       "refusal_class": null,
       "confidence": 0.6667,
-      "elapsed_ms": 2.9,
+      "elapsed_ms": 5.6,
       "payments": [
         "Nominees",
-        "Carer Allowance"
+        "Carer Payment"
       ],
       "unsourced": 0,
       "validator_errors": [],

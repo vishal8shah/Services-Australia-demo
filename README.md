@@ -38,14 +38,36 @@ make index                      # chunk and embed
 make eval-real                  # the suite against the crawled corpus
 ```
 
-Optional upgrades, both read from the environment:
+Optional upgrades, all read from the environment:
 
 ```bash
-export SAAL_EMBED_PROVIDER=voyage  VOYAGE_API_KEY=...     # real semantic retrieval
 export SAAL_LLM_PROVIDER=anthropic ANTHROPIC_API_KEY=...  # real synthesis
+export SAAL_EXPANDER=claude                               # recommended: rewrites the
+                                                          # question into page vocabulary,
+                                                          # same key, one small call
 export SAAL_RECORD=1                                      # record responses for replay
 export SAAL_DEMO_MODE=static                              # no live model calls at all
 ```
+
+Semantic embeddings are optional and there are three ways to get them, none of them
+required:
+
+```bash
+export SAAL_EMBED_PROVIDER=gemini GEMINI_API_KEY=...   # free tier, no card
+export SAAL_EMBED_PROVIDER=local                       # pip install sentence-transformers
+export SAAL_EMBED_PROVIDER=voyage VOYAGE_API_KEY=...   # paid
+make index                                             # changing the embedder rebuilds every vector
+```
+
+To see what expansion buys before paying for anything:
+
+```bash
+python3 -m evals.run                     # retrieval recall 0.82, payment recall 0.54
+python3 -m evals.run --expander oracle   # retrieval recall 1.00, payment recall 0.82
+```
+
+The oracle is hand written from the fixture vocabulary, so it is the ceiling rather
+than a measurement. `docs/decisions.md` D7 has the full table.
 
 ## What is here
 

@@ -46,8 +46,16 @@ STALE_AFTER_DAYS = int(os.environ.get("SAAL_STALE_AFTER_DAYS", "548"))  # 18 mon
 
 # Providers
 EMBED_PROVIDER = os.environ.get("SAAL_EMBED_PROVIDER", "hashing")
-EMBED_DIMS = int(os.environ.get("SAAL_EMBED_DIMS", "512"))
+EMBED_DIMS = int(os.environ.get("SAAL_EMBED_DIMS", "1024"))
+CHAR_NGRAM_WEIGHT = float(os.environ.get("SAAL_CHAR_NGRAM_WEIGHT", "0.35"))
 LLM_PROVIDER = os.environ.get("SAAL_LLM_PROVIDER", "stub")
+# Query expansion bridges the person's words to the vocabulary of the pages.
+# "claude" needs ANTHROPIC_API_KEY and costs one small call per question.
+EXPANDER = os.environ.get("SAAL_EXPANDER", "none")
+EXPANSION_MODEL = os.environ.get("SAAL_EXPANSION_MODEL", "claude-haiku-4-5-20251001")
+# Evidence reached through an expansion is second hand, so it counts for less
+# in the refusal decision than evidence matching what the person actually said.
+EXPANSION_WEIGHT = float(os.environ.get("SAAL_EXPANSION_WEIGHT", "0.5"))
 LLM_MODEL = os.environ.get("SAAL_MODEL", "claude-sonnet-5")
 JUDGE_MODEL = os.environ.get("SAAL_JUDGE_MODEL", "claude-opus-5")
 ANTHROPIC_BASE = os.environ.get("ANTHROPIC_BASE_URL", "https://api.anthropic.com")

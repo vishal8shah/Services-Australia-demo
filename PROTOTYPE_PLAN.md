@@ -55,7 +55,10 @@ flowchart TD
     D --> E[BM25 index FTS5]
     D --> F[Embedding vectors]
     G[User sentence, any language] --> H[Language detect and PII guard]
-    H --> I[Hybrid retrieve: BM25 plus vector, reciprocal rank fusion]
+    H --> P[Decompose into facets]
+    H --> Q[Expand into page vocabulary, optional]
+    P --> I[Hybrid retrieve: BM25 plus vector, weighted reciprocal rank fusion]
+    Q --> I
     E --> I
     F --> I
     I --> J{Score above floor?}
@@ -73,6 +76,8 @@ flowchart TD
 | Ingest | Python standard library, `trafilatura` used when installed | Zero install is worth more here than the last few points of extraction quality, so the stdlib extractor is the default and trafilatura is an optional upgrade |
 | Store | Single SQLite file, FTS5 for lexical | No infrastructure to provision, the whole corpus ships in the repo artefact |
 | Vectors | Embeddings stored as blobs, brute force cosine | At a few thousand chunks this is milliseconds: a vector database is pure ceremony here |
+| Embedding provider | Pluggable: `hashing` offline, or `gemini` free tier, `local` model, `voyage` paid | The offline one bridges spelling, never meaning, and the scorecard shows exactly what that costs |
+| Query expansion | Claude, one small call, optional | Cheaper than an embedding provider and it uses the key synthesis needs anyway |
 | Synthesis | Claude, strict JSON output, temperature 0, behind a provider interface | Contract enforcement matters more than prose quality, and the interface lets the suite run offline against a deterministic stub |
 | API | `http.server`, one module | A framework would be the only dependency in the project, to serve two endpoints |
 | UI | One static page, vanilla JS, Australian Government Design System tokens | Familiar visual language, zero build step |
@@ -127,7 +132,9 @@ Rule 3 is the cheap one that kills most of the damage: the model cannot introduc
 
 - **Chunk by heading**, keeping the full heading path as retrievable text. Services Australia pages use meaningful headings such as "Who can get it" and "How to claim", so the heading path alone carries most of the intent signal.
 - **Hybrid retrieval.** Lexical catches exact payment names, vector catches the situation sentence that shares no words with the page. Fuse with reciprocal rank fusion, no tuned weights to overfit.
-- **Query expansion, one pass.** A compound sentence is decomposed into its situation facets before retrieval: caring for a parent, reduced work hours, and so on. This is what surfaces two payment families from one sentence, and it is the single highest leverage piece of the pipeline.
+- **Decomposition, one pass.** A compound sentence is split into its situation facets before retrieval: caring for a parent, reduced work hours, and so on. This is what surfaces two payment families from one sentence.
+- **Expansion into page vocabulary, optional and measured.** The corpus says "constant care" and "looking for work". People say "Mum is moving in with us" and "I got let go". One small model call rewrites the situation into the vocabulary the pages use. On the fixture corpus this is the difference between retrieving the right payment family 82% of the time and 100% of the time.
+- **Three tiers of evidence, weighted apart.** The sentence is what the person said, a facet is part of what they said, an expansion is a model's guess at what they meant. Expansion evidence is discounted in the refusal decision, so a confident expander cannot talk the system out of refusing on its own.
 - **Retrieve in English always.** The corpus is English. Translate the query, keep the original for the answer language.
 - **Score floor before synthesis.** Below the floor, refuse. Tune the floor on the eval set, not on vibes.
 
@@ -148,6 +155,9 @@ This is the day that separates the build from a weekend demo, and it is the arte
 | Refusal precision | Refusal probes correctly refused | 8 of 8 |
 | Over refusal | Answerable questions wrongly refused | Under 5% |
 | Latency | Question to rendered answer, p50 | Under 6 seconds |
+| Retrieval recall | Expected family present in the retrieved chunks. Diagnostic, not a gate | Reported every run |
+
+Retrieval recall is reported beside payment recall for one reason: when it is high and payment recall is low, the retriever is fine and the generator is dropping what it was handed. Those two failures need opposite fixes, and one number cannot tell them apart.
 
 **How it runs:** `make eval` executes the suite, scores deterministic checks in code, uses a model judge only for "does this chunk support this claim", and writes a dated markdown scorecard into `evals/runs/`. Every scorecard is committed. The history of scorecards is the evidence.
 

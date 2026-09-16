@@ -27,7 +27,25 @@ from saal.testing import fixture_conn
 
 ROOT = Path(__file__).resolve().parent.parent
 GOLDEN = ROOT / "evals" / "golden.json"
+EXPANSIONS = ROOT / "evals" / "fixtures" / "expansions.json"
 RUNS = ROOT / "evals" / "runs"
+
+
+class OracleExpander:
+    """The best a query expander could do on this corpus, written by hand.
+
+    An ablation, not a measurement. It answers one question before you spend
+    anything: how much of the recall gap is query expansion actually able to
+    close? Every scorecard it produces says ORACLE in the header for that reason.
+    """
+
+    name = "oracle"
+
+    def __init__(self, phrases: list[str]) -> None:
+        self.phrases = phrases
+
+    def expand(self, question: str) -> list[str]:
+        return self.phrases
 
 
 # ---------------------------------------------------------------- scoring ---
@@ -81,6 +99,10 @@ def score_item(item: dict, response: dict) -> dict:
     else:
         expected = item["expect"]
         hit = found_names(expected, response.get("payments") or [])
+        retrieved = (response.get("meta") or {}).get("retrieved_titles") or []
+        in_corpus = [e for e in expected
+                     if any(name_matches(e, title) for title in retrieved)]
+        row["retrieval_recall"] = len(in_corpus) / len(expected) if expected else 0.0
         row["expected"] = expected
         row["found"] = hit
         row["recall"] = len(hit) / len(expected) if expected else 0.0
@@ -103,6 +125,9 @@ def aggregate(rows: list[dict], faithfulness: dict | None) -> dict:
     )
     return {
         "payment_recall": _mean([r["recall"] for r in answers]),
+        # Diagnostic, not a gate. When this is high and payment_recall is low, the
+        # retriever is fine and the generator is dropping what it was given.
+        "retrieval_recall": _mean([r.get("retrieval_recall", 0.0) for r in answers]),
         "compound_recall": _mean([1.0 if r["pass"] else 0.0 for r in compounds]),
         "citation_faithfulness": (faithfulness or {}).get("rate"),
         "fabricated_payment_rate": fabricated / len(rows) if rows else 0.0,
@@ -224,7 +249,7 @@ def git_commit() -> str:
 def write_scorecard(meta: dict, metrics: dict, gate_rows: list[dict],
                     rows: list[dict], faithfulness: dict | None) -> Path:
     RUNS.mkdir(parents=True, exist_ok=True)
-    stamp = datetime.now(timezone.utc).strftime("%Y-%m-%d-%H%M")
+    stamp = datetime.now(timezone.utc).strftime("%Y-%m-%d-%H%M%S")
     path = RUNS / f"{stamp}.md"
 
     failed = [g for g in gate_rows if g["status"] == "FAIL"]
@@ -242,8 +267,11 @@ def write_scorecard(meta: dict, metrics: dict, gate_rows: list[dict],
         f"| embedding provider | `{meta['embedder']}` |",
         f"| score floor | {meta['score_floor']} |",
         f"| judge | {meta['judge']} |",
+        f"| query expansion | {meta['expander']} |",
         f"| items run | {meta['items']} of {meta['items_total']} |",
         f"| commit | `{meta['commit']}` |",
+        "",
+        f"| retrieval recall (diagnostic, not a gate) | {metrics['retrieval_recall']} |",
         "",
         "## Gates",
         "",
@@ -283,6 +311,8 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--corpus", choices=["fixture", "real"], default="fixture")
     ap.add_argument("--provider", default=None, help="stub, fixture or anthropic")
     ap.add_argument("--judge", choices=["none", "anthropic"], default="none")
+    ap.add_argument("--expander", choices=["none", "oracle", "claude"], default="none",
+                    help="oracle is a hand written upper bound, not a measurement")
     ap.add_argument("--only", default="", help="comma separated item ids")
     ap.add_argument("--strict", action="store_true", help="exit non zero when a gate fails")
     args = ap.parse_args(argv)
@@ -306,6 +336,11 @@ def main(argv: list[str] | None = None) -> int:
         note = "Crawled corpus."
 
     provider = get_provider(args.provider) if args.provider else get_provider()
+    oracle = json.loads(EXPANSIONS.read_text())["phrases"] if args.expander == "oracle" else {}
+    if args.expander == "oracle":
+        note = "ORACLE EXPANSION, an upper bound. " + note
+    elif args.expander == "claude":
+        note = "Query expansion by the Claude expander. " + note
     counts = store.counts(conn)
     if not counts["chunks"]:
         print("corpus is empty: run `make crawl` then `make index`", file=sys.stderr)
@@ -314,7 +349,15 @@ def main(argv: list[str] | None = None) -> int:
     rows, responses = [], []
     started = time.perf_counter()
     for item in items:
-        response = pipeline.answer(item["question"], conn=conn, provider=provider)
+        if args.expander == "oracle":
+            expander = OracleExpander(oracle.get(item["id"], []))
+        elif args.expander == "claude":
+            from saal.retrieve.expand import get_expander
+            expander = get_expander("claude")
+        else:
+            expander = None
+        response = pipeline.answer(item["question"], conn=conn, provider=provider,
+                                   expander=expander)
         rows.append(score_item(item, response))
         responses.append((item, response))
         mark = "pass" if rows[-1]["pass"] else "FAIL"
@@ -333,12 +376,15 @@ def main(argv: list[str] | None = None) -> int:
         "corpus": args.corpus, "pages": counts["pages"], "chunks": counts["chunks"],
         "provider": getattr(provider, "name", "?"), "embedder": config.EMBED_PROVIDER,
         "score_floor": config.SCORE_FLOOR, "judge": args.judge,
+        "expander": args.expander,
         "items": len(items), "items_total": len(doc["items"]), "commit": git_commit(),
         "wall_seconds": round(time.perf_counter() - started, 2), "note": note,
     }
     path = write_scorecard(meta, metrics, gate_rows, rows, faithfulness)
 
     print()
+    print(f"  diagnostic  retrieval_recall         {metrics['retrieval_recall']} "
+          f"(expected families present in the retrieved chunks)")
     for g in gate_rows:
         value = "not scored" if g["value"] is None else g["value"]
         print(f"  {g['status']:>9}  {g['metric']:<24} {value}  (gate {g['gate']})")

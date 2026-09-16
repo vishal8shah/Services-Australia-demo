@@ -1,0 +1,73 @@
+{
+  "note": "An ORACLE. These phrases were written by hand from the fixture corpus vocabulary, so they represent the best a query expander could possibly do on this corpus. Use them to decide whether expansion is worth the API cost, never as a measurement of the real expander.",
+  "phrases": {
+    "W1": [
+      "looking for work",
+      "liquid assets waiting period",
+      "income test"
+    ],
+    "W2": [
+      "work and still get a part payment",
+      "income test",
+      "looking for work"
+    ],
+    "W3": [
+      "looking for work",
+      "mutual obligation requirements"
+    ],
+    "W4": [
+      "self employed or a sole trader",
+      "looking for work"
+    ],
+    "C1": [
+      "constant care",
+      "care receiver assessment",
+      "income test",
+      "daily care"
+    ],
+    "C2": [
+      "daily care",
+      "child under 16 with a disability",
+      "care needs assessment"
+    ],
+    "C3": [
+      "constant care",
+      "daily care",
+      "care receiver assessment"
+    ],
+    "A1": [
+      "Age Pension age",
+      "Work Bonus",
+      "employment income"
+    ],
+    "A3": [
+      "income test and an assets test",
+      "Australian resident",
+      "Age Pension age"
+    ],
+    "F2": [
+      "looking for work",
+      "approved child care service",
+      "activity test",
+      "pay rent to a private landlord"
+    ],
+    "S1": [
+      "studying full time",
+      "parents income is tested",
+      "live away from home to study"
+    ],
+    "X1": [
+      "severe financial hardship",
+      "family and domestic violence",
+      "social workers"
+    ],
+    "X3": [
+      "pay rent to a private landlord",
+      "qualifying payment"
+    ],
+    "H2": [
+      "proof of identity documents",
+      "income and assets"
+    ]
+  }
+}

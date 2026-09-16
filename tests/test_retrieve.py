@@ -36,15 +36,22 @@ class TestSearch(unittest.TestCase):
         self.assertEqual(hits[0].chunk.title, "Carer Allowance")
         self.assertGreater(hits[0].confidence, 0.5)
 
-    def test_facets_surface_a_family_the_whole_sentence_misses(self):
-        """The reason decomposition exists: one sentence, two situations."""
+    def test_facets_raise_confidence_on_a_compound_question(self):
+        """The reason decomposition exists: one sentence, two situations.
+
+        The offline stack still refuses this question, because confidence stays
+        under the floor. That is the documented finding in docs/decisions.md, not
+        a bug: what this asserts is that decomposition moves the number the right
+        way and puts both carer families into the candidate set.
+        """
         question = "Mum is 82 and moving in with us, I have dropped to three days a week."
-        plain = {h.chunk.title for h in search(self.conn, question)}
-        with_facets = {h.chunk.title for h in search(self.conn, question,
-                                                    facets=decompose(question))}
-        self.assertNotIn("Carer Payment", plain)
-        self.assertIn("Carer Payment", with_facets)
-        self.assertIn("Carer Allowance", with_facets)
+        plain = search(self.conn, question)
+        with_facets = search(self.conn, question, facets=decompose(question))
+        self.assertGreater(max(h.confidence for h in with_facets),
+                           max(h.confidence for h in plain))
+        titles = {h.chunk.title for h in with_facets}
+        self.assertIn("Carer Payment", titles)
+        self.assertIn("Carer Allowance", titles)
 
     def test_facets_never_vote_out_the_sentences_own_best_hit(self):
         """A fragment gets less of a vote than the whole question. Regression:

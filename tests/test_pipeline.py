@@ -50,9 +50,9 @@ class TestPipeline(unittest.TestCase):
     def test_no_answer_path_returns_prose_outside_the_contract(self):
         out = self.ask("What documents do I need to prove my identity?")
         self.assertEqual(
-            set(out) - {"language", "query", "query_facets", "refusal", "payments",
-                        "next_actions", "sources", "not_answered", "confidence", "meta",
-                        "stale_sources"},
+            set(out) - {"language", "query", "query_facets", "query_expansions",
+                        "refusal", "payments", "next_actions", "sources",
+                        "not_answered", "confidence", "meta", "stale_sources"},
             set())
 
     def test_language_is_detected_from_the_question(self):
@@ -75,6 +75,63 @@ class TestPipeline(unittest.TestCase):
         self.assertEqual(out["refusal"]["class"], "low_confidence")
         self.assertEqual(out["payments"], [])
         self.assertTrue(any("rule 3" in e for e in out["meta"]["validator_errors"]))
+
+
+class StubExpander:
+    """Stands in for the Claude expander, with the phrases it would return."""
+
+    name = "stub"
+
+    def __init__(self, phrases):
+        self.phrases = phrases
+
+    def expand(self, question):
+        return self.phrases
+
+
+class TestExpansion(unittest.TestCase):
+    """Query expansion is the recommended fix for the situation questions that
+    the offline stack refuses. These tests prove the wiring without a key."""
+
+    QUESTION = "Mum is 82 and moving in with us, I have dropped to three days a week."
+
+    @classmethod
+    def setUpClass(cls):
+        cls.conn = fixture_conn()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.conn.close()
+
+    def test_without_expansion_the_compound_question_refuses(self):
+        out = pipeline.answer(self.QUESTION, conn=self.conn)
+        self.assertEqual(out["refusal"]["class"], "low_confidence")
+
+    def test_expansion_into_page_vocabulary_lifts_it_over_the_floor(self):
+        expander = StubExpander(["constant care", "care receiver assessment",
+                                 "income test", "carer payment"])
+        out = pipeline.answer(self.QUESTION, conn=self.conn, expander=expander)
+        self.assertIsNone(out["refusal"], out.get("refusal"))
+        names = " ".join(p["name"] for p in out["payments"])
+        self.assertIn("Carer", names)
+        self.assertEqual(out["query_expansions"], expander.phrases)
+
+    def test_an_expansion_alone_cannot_manufacture_confidence(self):
+        """A confident expander pointing at an unrelated corpus must still refuse."""
+        expander = StubExpander(["trademark registration", "business name"])
+        out = pipeline.answer("How do I register a trademark?", conn=self.conn,
+                              expander=expander)
+        self.assertEqual(out["refusal"]["class"], "low_confidence")
+
+    def test_a_failing_expander_degrades_retrieval_rather_than_the_answer(self):
+        class Broken:
+            name = "broken"
+
+            def expand(self, question):
+                raise RuntimeError("network down")
+
+        with self.assertRaises(RuntimeError):
+            pipeline.answer(self.QUESTION, conn=self.conn, expander=Broken())
 
 
 if __name__ == "__main__":

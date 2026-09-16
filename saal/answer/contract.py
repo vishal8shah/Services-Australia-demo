@@ -37,6 +37,7 @@ def empty(language: str = "en") -> dict[str, Any]:
         "language": language,
         "query": None,
         "query_facets": [],
+        "query_expansions": [],
         "refusal": None,
         "payments": [],
         "next_actions": [],

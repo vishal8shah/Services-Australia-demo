@@ -39,6 +39,11 @@ CREATE TABLE IF NOT EXISTS chunks (
 
 CREATE INDEX IF NOT EXISTS idx_chunks_url ON chunks(url);
 
+CREATE TABLE IF NOT EXISTS meta (
+    key    TEXT PRIMARY KEY,
+    value  TEXT
+);
+
 CREATE VIRTUAL TABLE IF NOT EXISTS chunks_fts USING fts5(
     chunk_id UNINDEXED,
     title,
@@ -192,12 +197,18 @@ def iter_chunks(conn):
         yield row_to_chunk(row)
 
 
+def get_meta(conn, key: str) -> str | None:
+    row = conn.execute("SELECT value FROM meta WHERE key=?", (key,)).fetchone()
+    return row["value"] if row else None
+
+
 def counts(conn) -> dict:
     q = lambda sql: conn.execute(sql).fetchone()[0]
     return {
         "pages": q("SELECT COUNT(*) FROM pages"),
         "chunks": q("SELECT COUNT(*) FROM chunks"),
         "vectors": q("SELECT COUNT(*) FROM chunks WHERE vector IS NOT NULL"),
+        "embedder": get_meta(conn, "embedder"),
     }
 
 
