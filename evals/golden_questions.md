@@ -84,7 +84,7 @@
 | H1 | My prescriptions cost more than I can afford and I am on a low income. | Low Income Health Care Card, PBS Safety Net | single | |
 | H2 | What do I need to bring when I claim the Age Pension? | Age Pension claim documents, proof of identity | single | |
 
-**Count: 30.** Compound items: 14. Language pass on Day 5 reruns **C1, F2 and X1** in Simplified Chinese, Arabic and Vietnamese.
+**Count: 31.** Compound items: 12. Language pass on Day 5 reruns **C1, F2 and X1** in Simplified Chinese, Arabic and Vietnamese.
 
 ---
 
@@ -121,11 +121,11 @@ These four are answerable and must **not** refuse. They exist because a system t
 | Metric | Computed by | Gate |
 |---|---|---|
 | Payment recall | Deterministic string match on the expected family names | 90% |
-| Compound recall | All expected families present on the 14 compound items | 80% |
+| Compound recall | All expected families present on the 12 compound items | 80% |
 | Citation faithfulness | Model judge, one rubric question per claim: does this chunk support this claim, yes or no | 100% |
 | Fabricated payment rate | Deterministic: payment name absent from every cited chunk | 0% |
 | Refusal precision | 8 probes refused | 8 of 8 |
 | Over refusal | Control set answered | 4 of 4 |
 | Latency p50 | Wall clock, question to rendered answer | Under 6 seconds |
 
-Scorecards land in `evals/runs/YYYY-MM-DD-HHMM.md` and every one is committed. A failing run is committed too: the history is the evidence, and a suite that only records its wins proves nothing.
+The machine readable answer key is `evals/golden.json`, which a unit test keeps in step with this file. Scorecards land in `evals/runs/YYYY-MM-DD-HHMM.md` and every one is committed. A failing run is committed too: the history is the evidence, and a suite that only records its wins proves nothing.

@@ -1,0 +1,13 @@
+[project]
+name = "saal"
+version = "0.1.0"
+description = "Unofficial cited answer layer over public Services Australia individuals content"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.optional-dependencies]
+crawl = ["trafilatura>=2.0"]
+llm = []
+
+[tool.setuptools.packages.find]
+include = ["saal*"]

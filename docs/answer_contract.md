@@ -43,7 +43,11 @@ The reference the Day 2 build works from. There is one output shape and one refu
 - `query_facets` is rendered in the interface. Showing the user how their sentence was decomposed is the cheapest trust signal available, and it is how they notice when a facet was missed.
 - `distinguisher` exists because the single most common failure on the live site is not knowing that two similarly named payments are different things.
 - `not_answered` is populated deliberately. An answer that quietly omits the money question feels evasive: an answer that names what it will not tell you and why does not.
-- `stale` is set when `page_last_updated` is older than 18 months at query time.
+- `stale` is set when `page_last_updated` is older than 18 months at query time, and a
+  source with no date at all counts as stale: absence of evidence is not freshness.
+- Chunk ids look like `c_9f3a21b7`, a hash of the page url, the heading path and the
+  ordinal. They are keyed on location rather than content, so an edited paragraph keeps
+  its id across a recrawl and the eval answer key survives a content refresh.
 
 ---
 
@@ -55,7 +59,7 @@ Runs after generation, in code. Prompt instructions are not a control.
 |---|---|---|
 | 1 | Every id in any `source_ids` exists in the retrieved set for this query | Refuse |
 | 2 | Every eligibility signal and every next action carries at least one source id | Refuse |
-| 3 | Every `payments[].name` appears verbatim in at least one chunk cited by that payment | Refuse |
+| 3 | Every `payments[].name` appears verbatim in at least one chunk cited by that payment, matched against the chunk's title, heading path and text | Refuse |
 | 4 | Every url in `next_actions` matches the url of a cited source | Strip the url, keep the action |
 | 5 | Response parses against the schema | Retry once at temperature 0, then refuse |
 | 6 | No dollar figure, wait time, or processing time appears anywhere in the output | Strip the sentence, add to `not_answered` |

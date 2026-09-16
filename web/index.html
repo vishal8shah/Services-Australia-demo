@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Payment finder, unofficial prototype</title>
+<style>
+  :root {
+    --bg: #f6f6f4;
+    --surface: #ffffff;
+    --ink: #1c1d1f;
+    --ink-soft: #55585e;
+    --line: #dcdee3;
+    --accent: #b45309;
+    --accent-soft: #fdf4e7;
+    --support: #33506b;
+    --warn-bg: #fdf6ec;
+    --refuse-bg: #f3f4f6;
+    --radius: 10px;
+    --max: 44rem;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 16px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  }
+  .wrap { max-width: var(--max); margin: 0 auto; padding: 16px; }
+  .notice {
+    background: var(--accent-soft); border-bottom: 2px solid var(--accent);
+    color: #6b3d05; font-size: 0.92rem;
+  }
+  .notice .wrap { padding: 10px 16px; }
+  .notice strong { color: #7c2d12; }
+  h1 { font-size: 1.5rem; margin: 24px 0 4px; letter-spacing: -0.01em; }
+  .sub { color: var(--ink-soft); margin: 0 0 20px; }
+  form { display: flex; gap: 8px; flex-wrap: wrap; }
+  label { display: block; font-weight: 600; margin-bottom: 6px; }
+  textarea {
+    width: 100%; min-height: 84px; padding: 12px; font: inherit; color: inherit;
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    resize: vertical;
+  }
+  textarea:focus-visible, button:focus-visible, a:focus-visible {
+    outline: 3px solid var(--accent); outline-offset: 2px;
+  }
+  button {
+    font: inherit; font-weight: 600; padding: 11px 18px; border-radius: var(--radius);
+    border: 1px solid transparent; background: var(--accent); color: #fff; cursor: pointer;
+  }
+  button:hover { background: #92400e; }
+  button.ghost { background: var(--surface); color: var(--support); border-color: var(--line); }
+  .examples { margin: 12px 0 0; display: flex; gap: 8px; flex-wrap: wrap; }
+  .examples button { font-size: 0.86rem; font-weight: 500; padding: 7px 12px; }
+  .card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 16px 18px; margin: 14px 0;
+  }
+  .card h3 { margin: 0 0 2px; font-size: 1.15rem; }
+  .card .who { color: var(--ink-soft); margin: 0 0 10px; }
+  .tag {
+    display: inline-block; font-size: 0.74rem; font-weight: 700; letter-spacing: 0.04em;
+    text-transform: uppercase; color: var(--support); background: #eef2f6;
+    border-radius: 999px; padding: 3px 9px; margin-bottom: 8px;
+  }
+  ul { margin: 8px 0; padding-left: 20px; }
+  li { margin: 5px 0; }
+  .cite {
+    font-size: 0.72rem; color: var(--support); background: #eef2f6; border-radius: 4px;
+    padding: 1px 5px; margin-left: 4px; text-decoration: none; white-space: nowrap;
+  }
+  ol.actions { padding-left: 20px; }
+  ol.actions li { margin: 8px 0; }
+  .facets { font-size: 0.88rem; color: var(--ink-soft); margin: 14px 0 0; }
+  .facets span {
+    display: inline-block; background: var(--surface); border: 1px solid var(--line);
+    border-radius: 999px; padding: 3px 10px; margin: 4px 4px 0 0;
+  }
+  .refusal { background: var(--refuse-bg); border-left: 4px solid var(--support); }
+  .stale { background: var(--warn-bg); border-left: 4px solid var(--accent); font-size: 0.9rem; }
+  .sources li { font-size: 0.88rem; }
+  .sources .when { color: var(--ink-soft); }
+  footer { color: var(--ink-soft); font-size: 0.85rem; margin: 32px 0 48px; }
+  footer a { color: var(--support); }
+  .spinner { color: var(--ink-soft); }
+  [dir="rtl"] { text-align: right; }
+  @media (prefers-reduced-motion: no-preference) {
+    .card { transition: none; }
+  }
+</style>
+</head>
+<body>
+<div class="notice">
+  <div class="wrap">
+    <strong>Unofficial prototype.</strong> Not affiliated with Services Australia or the
+    Commonwealth. It cannot see your record, your claim, your balance, wait times or payment
+    amounts, and it stores nothing. For anything about you, use myGov or call 132 850.
+  </div>
+</div>
+
+<main class="wrap">
+  <h1>Describe your situation</h1>
+  <p class="sub">One sentence, in any language. You get the payments that apply, what the rules
+     say, what to do next, and a link to the official page behind every line.</p>
+
+  <form id="ask">
+    <label for="q">Your situation</label>
+    <textarea id="q" name="q" required
+      placeholder="Mum is 82 and moving in with us, I have dropped to three days a week."></textarea>
+    <button type="submit">Find payments</button>
+    <button type="button" class="ghost" id="clear">Clear</button>
+  </form>
+
+  <div class="examples" aria-label="Example situations">
+    <button type="button" class="ghost ex">Mum is 82 and moving in with us, I have dropped to three days a week.</button>
+    <button type="button" class="ghost ex">I lost my job last month, I have two kids in childcare and I rent.</button>
+    <button type="button" class="ghost ex">We are having a baby in March and I am self employed.</button>
+  </div>
+
+  <div id="out" aria-live="polite"></div>
+
+  <footer>
+    <p>Answers are drawn from public pages published by Services Australia,
+       &copy; Commonwealth of Australia, reused under
+       <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>.
+       This tool is not endorsed by them.</p>
+    <p id="build"></p>
+  </footer>
+</main>
+
+<script>
+const out = document.getElementById('out');
+const q = document.getElementById('q');
+
+document.querySelectorAll('.ex').forEach(b => b.addEventListener('click', () => {
+  q.value = b.textContent.trim(); ask();
+}));
+document.getElementById('clear').addEventListener('click', () => {
+  q.value = ''; out.innerHTML = ''; q.focus();
+});
+document.getElementById('ask').addEventListener('submit', e => { e.preventDefault(); ask(); });
+
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c =>
+  ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+const cites = (ids, sources) => (ids || []).map(id => {
+  const s = (sources || []).find(x => x.id === id);
+  return s ? `<a class="cite" href="${esc(s.url)}" target="_blank" rel="noopener"
+    title="${esc(s.title)}, page last updated ${esc(s.page_last_updated || 'unknown')}">${esc(id)}</a>` : '';
+}).join('');
+
+async function ask() {
+  const question = q.value.trim();
+  if (!question) return;
+  out.innerHTML = '<p class="spinner">Looking through the pages…</p>';
+  let data;
+  try {
+    const res = await fetch('/api/answer?q=' + encodeURIComponent(question));
+    data = await res.json();
+  } catch (err) {
+    out.innerHTML = '<div class="card refusal"><p>The service did not respond. Nothing was sent anywhere.</p></div>';
+    return;
+  }
+  render(data);
+}
+
+function render(d) {
+  document.documentElement.lang = d.language || 'en';
+  const rtl = ['ar','fa','he','ur'].includes(d.language);
+  out.setAttribute('dir', rtl ? 'rtl' : 'ltr');
+
+  if (d.refusal) {
+    const o = d.refusal.offer;
+    out.innerHTML = `
+      <div class="card refusal">
+        <span class="tag">This one is out of scope</span>
+        <p>${esc(d.refusal.message)}</p>
+        ${o ? `<p>${o.url ? `<a href="${esc(o.url)}" target="_blank" rel="noopener">${esc(o.text)}</a>`
+                        : esc(o.text)}</p>` : ''}
+        <p>Services Australia: ${esc(d.refusal.phone)}</p>
+      </div>`;
+    return;
+  }
+
+  const facets = (d.query_facets || []).length
+    ? `<p class="facets">Read as ${d.query_facets.length} separate situations:
+        ${d.query_facets.map(f => `<span>${esc(f)}</span>`).join('')}</p>` : '';
+
+  const payments = (d.payments || []).map(p => `
+    <div class="card">
+      <h3>${esc(p.name)}</h3>
+      <p class="who">${esc(p.one_liner || '')}</p>
+      ${p.distinguisher ? `<p class="who"><strong>Not the same as:</strong> ${esc(p.distinguisher)}</p>` : ''}
+      <p><strong>What the rules say</strong></p>
+      <ul>${(p.eligibility_signals || []).map(s =>
+        `<li>${esc(s.text)}${cites(s.source_ids, d.sources)}</li>`).join('')}</ul>
+    </div>`).join('');
+
+  const actions = (d.next_actions || []).length ? `
+    <div class="card">
+      <span class="tag">What to do next</span>
+      <ol class="actions">${d.next_actions.map(a => `
+        <li>${esc(a.text)}${a.url ? ` <a href="${esc(a.url)}" target="_blank" rel="noopener">Open the official page</a>` : ''}
+        ${cites(a.source_ids, d.sources)}</li>`).join('')}</ol>
+    </div>` : '';
+
+  const notAnswered = (d.not_answered || []).length ? `
+    <div class="card stale">
+      <strong>What this cannot tell you</strong>
+      <ul>${d.not_answered.map(x => `<li>${esc(x)}</li>`).join('')}</ul>
+    </div>` : '';
+
+  const sources = `
+    <div class="card sources">
+      <span class="tag">Sources</span>
+      <ul>${(d.sources || []).map(s => `
+        <li><a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.title)}</a>
+        <span class="when">page last updated ${esc(s.page_last_updated || 'unknown')}
+        ${s.stale ? ' · check this one, it is over 18 months old' : ''}</span></li>`).join('')}</ul>
+    </div>`;
+
+  out.innerHTML = facets + payments + actions + notAnswered + sources;
+}
+
+fetch('/api/health').then(r => r.json()).then(h => {
+  document.getElementById('build').textContent =
+    `${h.chunks} chunks from ${h.pages} pages · answers by ${h.provider} · mode ${h.demo_mode}`;
+}).catch(() => {});
+</script>
+</body>
+</html>

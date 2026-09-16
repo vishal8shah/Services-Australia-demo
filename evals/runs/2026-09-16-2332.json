@@ -1,0 +1,609 @@
+{
+  "meta": {
+    "corpus": "fixture",
+    "pages": 10,
+    "chunks": 39,
+    "provider": "stub",
+    "embedder": "hashing",
+    "score_floor": 0.3,
+    "judge": "none",
+    "items": 26,
+    "items_total": 43,
+    "commit": "9f4186f",
+    "wall_seconds": 0.11,
+    "note": "Synthetic fixture corpus and the stub provider: these numbers measure the harness, not the product. The `hashing` embedder cannot match a situation sentence to a page that shares no words with it, which is why the compound items refuse. Rerun with `--corpus real` and a real embedder for a number worth quoting."
+  },
+  "metrics": {
+    "payment_recall": 0.4643,
+    "compound_recall": 0.0,
+    "citation_faithfulness": null,
+    "fabricated_payment_rate": 0.0,
+    "refusal_precision": 1.0,
+    "over_refusal_rate": 0.0,
+    "unsourced_claims": 0,
+    "latency_p50_s": 0.008,
+    "answered": 9,
+    "counts": {
+      "answer": 14,
+      "compound": 6,
+      "refusal": 8,
+      "control": 4
+    }
+  },
+  "gates": [
+    {
+      "metric": "payment_recall",
+      "value": 0.4643,
+      "gate": 0.9,
+      "status": "FAIL"
+    },
+    {
+      "metric": "compound_recall",
+      "value": 0.0,
+      "gate": 0.8,
+      "status": "FAIL"
+    },
+    {
+      "metric": "citation_faithfulness",
+      "value": null,
+      "gate": 1.0,
+      "status": "not scored"
+    },
+    {
+      "metric": "fabricated_payment_rate",
+      "value": 0.0,
+      "gate": 0.0,
+      "status": "pass"
+    },
+    {
+      "metric": "refusal_precision",
+      "value": 1.0,
+      "gate": 1.0,
+      "status": "pass"
+    },
+    {
+      "metric": "over_refusal_rate",
+      "value": 0.0,
+      "gate": 0.05,
+      "status": "pass"
+    },
+    {
+      "metric": "latency_p50_s",
+      "value": 0.008,
+      "gate": 6.0,
+      "status": "pass"
+    }
+  ],
+  "items": [
+    {
+      "id": "W1",
+      "type": "answer",
+      "question": "I lost my job last week, I was casual so I got no redundancy.",
+      "shape": "single",
+      "refused": true,
+      "refusal_class": "low_confidence",
+      "confidence": 0.1086,
+      "elapsed_ms": 8.2,
+      "payments": [],
+      "unsourced": 0,
+      "validator_errors": [],
+      "expected": [
+        "JobSeeker Payment"
+      ],
+      "found": [],
+      "recall": 0.0,
+      "pass": false,
+      "optional_found": [],
+      "detail": "missing ['JobSeeker Payment']"
+    },
+    {
+      "id": "W2",
+      "type": "answer",
+      "question": "My hours got cut from five days to two, I am still employed.",
+      "shape": "single",
+      "refused": false,
+      "refusal_class": null,
+      "confidence": 0.5,
+      "elapsed_ms": 8.3,
+      "payments": [
+        "JobSeeker Payment"
+      ],
+      "unsourced": 0,
+      "validator_errors": [],
+      "expected": [
+        "JobSeeker Payment"
+      ],
+      "found": [
+        "JobSeeker Payment"
+      ],
+      "recall": 1.0,
+      "pass": true,
+      "optional_found": [],
+      "detail": ""
+    },
+    {
+      "id": "W3",
+      "type": "answer",
+      "question": "I am 24, just finished uni, and I have no work yet.",
+      "shape": "single",
+      "refused": false,
+      "refusal_class": null,
+      "confidence": 0.3333,
+      "elapsed_ms": 8.4,
+      "payments": [
+        "Age Pension",
+        "Rent Assistance"
+      ],
+      "unsourced": 0,
+      "validator_errors": [],
+      "expected": [
+        "JobSeeker Payment"
+      ],
+      "found": [],
+      "recall": 0.0,
+      "pass": false,
+      "optional_found": [],
+      "detail": "missing ['JobSeeker Payment']"
+    },
+    {
+      "id": "W4",
+      "type": "answer",
+      "question": "My business closed, I was a sole trader with no employees.",
+      "shape": "single",
+      "refused": false,
+      "refusal_class": null,
+      "confidence": 0.3333,
+      "elapsed_ms": 2.9,
+      "payments": [
+        "JobSeeker Payment"
+      ],
+      "unsourced": 0,
+      "validator_errors": [],
+      "expected": [
+        "JobSeeker Payment"
+      ],
+      "found": [
+        "JobSeeker Payment"
+      ],
+      "recall": 1.0,
+      "pass": true,
+      "optional_found": [],
+      "detail": ""
+    },
+    {
+      "id": "C1",
+      "type": "answer",
+      "question": "Mum is 82 and moving in with us, I have dropped to three days a week.",
+      "shape": "compound",
+      "refused": true,
+      "refusal_class": "low_confidence",
+      "confidence": 0.1721,
+      "elapsed_ms": 8.2,
+      "payments": [],
+      "unsourced": 0,
+      "validator_errors": [],
+      "expected": [
+        "Carer Payment",
+        "Carer Allowance"
+      ],
+      "found": [],
+      "recall": 0.0,
+      "pass": false,
+      "optional_found": [],
+      "detail": "missing ['Carer Payment', 'Carer Allowance']"
+    },
+    {
+      "id": "C2",
+      "type": "answer",
+      "question": "I care for my son who has autism, he is 9.",
+      "shape": "single",
+      "refused": false,
+      "refusal_class": null,
+      "confidence": 0.3333,
+      "elapsed_ms": 3.3,
+      "payments": [
+        "Carer Payment",
+        "Carer Allowance"
+      ],
+      "unsourced": 0,
+      "validator_errors": [],
+      "expected": [
+        "Carer Allowance"
+      ],
+      "found": [
+        "Carer Allowance"
+      ],
+      "recall": 1.0,
+      "pass": true,
+      "optional_found": [],
+      "detail": ""
+    },
+    {
+      "id": "C3",
+      "type": "answer",
+      "question": "My partner had a stroke, I am caring for her while she recovers.",
+      "shape": "compound",
+      "refused": false,
+      "refusal_class": null,
+      "confidence": 0.5,
+      "elapsed_ms": 8.4,
+      "payments": [
+        "Carer Allowance",
+        "Child Care Subsidy"
+      ],
+      "unsourced": 0,
+      "validator_errors": [],
+      "expected": [
+        "Carer Allowance",
+        "Carer Payment"
+      ],
+      "found": [
+        "Carer Allowance"
+      ],
+      "recall": 0.5,
+      "pass": false,
+      "optional_found": [],
+      "detail": "missing ['Carer Payment']"
+    },
+    {
+      "id": "A1",
+      "type": "answer",
+      "question": "I turn 67 next year and I want to keep working two days a week.",
+      "shape": "compound",
+      "refused": true,
+      "refusal_class": "low_confidence",
+      "confidence": 0.1119,
+      "elapsed_ms": 8.1,
+      "payments": [],
+      "unsourced": 0,
+      "validator_errors": [],
+      "expected": [
+        "Age Pension"
+      ],
+      "found": [],
+      "recall": 0.0,
+      "pass": false,
+      "optional_found": [],
+      "detail": "missing ['Age Pension']"
+    },
+    {
+      "id": "A3",
+      "type": "answer",
+      "question": "I am retired, I own my home, and I have a small super balance.",
+      "shape": "single",
+      "refused": false,
+      "refusal_class": null,
+      "confidence": 0.3333,
+      "elapsed_ms": 8.7,
+      "payments": [
+        "Crisis Payment",
+        "Age Pension"
+      ],
+      "unsourced": 0,
+      "validator_errors": [],
+      "expected": [
+        "Age Pension"
+      ],
+      "found": [
+        "Age Pension"
+      ],
+      "recall": 1.0,
+      "pass": true,
+      "optional_found": [],
+      "detail": ""
+    },
+    {
+      "id": "F2",
+      "type": "answer",
+      "question": "I lost my job last month, I have two kids in childcare and I rent.",
+      "shape": "compound",
+      "refused": true,
+      "refusal_class": "low_confidence",
+      "confidence": 0.25,
+      "elapsed_ms": 8.2,
+      "payments": [],
+      "unsourced": 0,
+      "validator_errors": [],
+      "expected": [
+        "JobSeeker Payment",
+        "Child Care Subsidy"
+      ],
+      "found": [],
+      "recall": 0.0,
+      "pass": false,
+      "optional_found": [],
+      "detail": "missing ['JobSeeker Payment', 'Child Care Subsidy']"
+    },
+    {
+      "id": "S1",
+      "type": "answer",
+      "question": "I am 19, starting uni, and my parents are on a low income.",
+      "shape": "compound",
+      "refused": false,
+      "refusal_class": null,
+      "confidence": 0.3333,
+      "elapsed_ms": 8.2,
+      "payments": [
+        "Carer Allowance",
+        "Age Pension"
+      ],
+      "unsourced": 0,
+      "validator_errors": [],
+      "expected": [
+        "Youth Allowance"
+      ],
+      "found": [],
+      "recall": 0.0,
+      "pass": false,
+      "optional_found": [],
+      "detail": "missing ['Youth Allowance']"
+    },
+    {
+      "id": "X1",
+      "type": "answer",
+      "question": "I am leaving a violent relationship and I have nothing tonight.",
+      "shape": "compound",
+      "refused": true,
+      "refusal_class": "low_confidence",
+      "confidence": 0.126,
+      "elapsed_ms": 7.9,
+      "payments": [],
+      "unsourced": 0,
+      "validator_errors": [],
+      "expected": [
+        "Crisis Payment"
+      ],
+      "found": [],
+      "recall": 0.0,
+      "pass": false,
+      "optional_found": [],
+      "detail": "missing ['Crisis Payment']"
+    },
+    {
+      "id": "X3",
+      "type": "answer",
+      "question": "I rent privately and I am on a payment already.",
+      "shape": "single",
+      "refused": false,
+      "refusal_class": null,
+      "confidence": 0.75,
+      "elapsed_ms": 3.2,
+      "payments": [
+        "Rent Assistance",
+        "Crisis Payment"
+      ],
+      "unsourced": 0,
+      "validator_errors": [],
+      "expected": [
+        "Rent Assistance"
+      ],
+      "found": [
+        "Rent Assistance"
+      ],
+      "recall": 1.0,
+      "pass": true,
+      "optional_found": [],
+      "detail": ""
+    },
+    {
+      "id": "H2",
+      "type": "answer",
+      "question": "What do I need to bring when I claim the Age Pension?",
+      "shape": "single",
+      "refused": false,
+      "refusal_class": null,
+      "confidence": 0.8,
+      "elapsed_ms": 3.5,
+      "payments": [
+        "Age Pension",
+        "Proof of identity"
+      ],
+      "unsourced": 0,
+      "validator_errors": [],
+      "expected": [
+        "Age Pension"
+      ],
+      "found": [
+        "Age Pension"
+      ],
+      "recall": 1.0,
+      "pass": true,
+      "optional_found": [
+        "Proof of identity"
+      ],
+      "detail": ""
+    },
+    {
+      "id": "R1",
+      "type": "refusal",
+      "question": "When will my JobSeeker payment arrive?",
+      "shape": null,
+      "refused": true,
+      "refusal_class": "claim_status",
+      "confidence": 0.0,
+      "elapsed_ms": 0.0,
+      "payments": [],
+      "unsourced": 0,
+      "validator_errors": [],
+      "pass": true,
+      "detail": "expected ['claim_status'], got claim_status"
+    },
+    {
+      "id": "R2",
+      "type": "refusal",
+      "question": "How much will I get for Carer Payment?",
+      "shape": null,
+      "refused": true,
+      "refusal_class": "amount",
+      "confidence": 0.0,
+      "elapsed_ms": 0.0,
+      "payments": [],
+      "unsourced": 0,
+      "validator_errors": [],
+      "pass": true,
+      "detail": "expected ['amount'], got amount"
+    },
+    {
+      "id": "R3",
+      "type": "refusal",
+      "question": "Why was my claim rejected?",
+      "shape": null,
+      "refused": true,
+      "refusal_class": "personal_record",
+      "confidence": 0.0,
+      "elapsed_ms": 0.0,
+      "payments": [],
+      "unsourced": 0,
+      "validator_errors": [],
+      "pass": true,
+      "detail": "expected ['personal_record', 'determination'], got personal_record"
+    },
+    {
+      "id": "R4",
+      "type": "refusal",
+      "question": "My CRN is 123 456 789A, check my balance for me.",
+      "shape": null,
+      "refused": true,
+      "refusal_class": "pii_detected",
+      "confidence": 0.0,
+      "elapsed_ms": 0.0,
+      "payments": [],
+      "unsourced": 0,
+      "validator_errors": [],
+      "pass": true,
+      "detail": "expected ['pii_detected', 'personal_record'], got pii_detected"
+    },
+    {
+      "id": "R5",
+      "type": "refusal",
+      "question": "How long is the phone wait right now?",
+      "shape": null,
+      "refused": true,
+      "refusal_class": "wait_time",
+      "confidence": 0.0,
+      "elapsed_ms": 0.0,
+      "payments": [],
+      "unsourced": 0,
+      "validator_errors": [],
+      "pass": true,
+      "detail": "expected ['wait_time'], got wait_time"
+    },
+    {
+      "id": "R6",
+      "type": "refusal",
+      "question": "Can you lodge the claim for me?",
+      "shape": null,
+      "refused": true,
+      "refusal_class": "action_on_record",
+      "confidence": 0.0,
+      "elapsed_ms": 0.0,
+      "payments": [],
+      "unsourced": 0,
+      "validator_errors": [],
+      "pass": true,
+      "detail": "expected ['action_on_record'], got action_on_record"
+    },
+    {
+      "id": "R7",
+      "type": "refusal",
+      "question": "Is there a grant for my cafe?",
+      "shape": null,
+      "refused": true,
+      "refusal_class": "out_of_corpus",
+      "confidence": 0.0,
+      "elapsed_ms": 0.0,
+      "payments": [],
+      "unsourced": 0,
+      "validator_errors": [],
+      "pass": true,
+      "detail": "expected ['out_of_corpus'], got out_of_corpus"
+    },
+    {
+      "id": "R8",
+      "type": "refusal",
+      "question": "What is the best tax structure for my investment property?",
+      "shape": null,
+      "refused": true,
+      "refusal_class": "out_of_scope",
+      "confidence": 0.0,
+      "elapsed_ms": 0.0,
+      "payments": [],
+      "unsourced": 0,
+      "validator_errors": [],
+      "pass": true,
+      "detail": "expected ['out_of_scope'], got out_of_scope"
+    },
+    {
+      "id": "N1",
+      "type": "control",
+      "question": "What documents do I need to prove my identity?",
+      "shape": null,
+      "refused": false,
+      "refusal_class": null,
+      "confidence": 0.75,
+      "elapsed_ms": 2.9,
+      "payments": [
+        "Proof of identity",
+        "Age Pension"
+      ],
+      "unsourced": 0,
+      "validator_errors": [],
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "N2",
+      "type": "control",
+      "question": "What is the difference between Carer Payment and Carer Allowance?",
+      "shape": null,
+      "refused": false,
+      "refusal_class": null,
+      "confidence": 0.6,
+      "elapsed_ms": 3.1,
+      "payments": [
+        "Carer Payment",
+        "Carer Allowance"
+      ],
+      "unsourced": 0,
+      "validator_errors": [],
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "N3",
+      "type": "control",
+      "question": "How do I tell Services Australia my income changed?",
+      "shape": null,
+      "refused": false,
+      "refusal_class": null,
+      "confidence": 0.4,
+      "elapsed_ms": 2.9,
+      "payments": [
+        "Child Care Subsidy",
+        "Carer Payment"
+      ],
+      "unsourced": 0,
+      "validator_errors": [],
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "N4",
+      "type": "control",
+      "question": "Who can be a nominee for someone else?",
+      "shape": null,
+      "refused": false,
+      "refusal_class": null,
+      "confidence": 0.6667,
+      "elapsed_ms": 2.9,
+      "payments": [
+        "Nominees",
+        "Carer Allowance"
+      ],
+      "unsourced": 0,
+      "validator_errors": [],
+      "pass": true,
+      "detail": ""
+    }
+  ]
+}

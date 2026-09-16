@@ -12,7 +12,7 @@
 
 ## 0. The one paragraph version
 
-Services Australia publishes everything a person needs to know, organised by the name of the payment. People arrive with a situation, not a payment name, so they fail at the first step and call instead: about 30.5 million calls in 2024 to 25, 12% of them abandoned, 28% abandoned in aged care payment assistance. This prototype takes one plain language sentence in any language, retrieves from the public individuals content, and returns the payment families that apply, who each is for, the eligibility signals, the ordered next actions, and a source link with the page's own last updated date against every claim. It refuses, by design, anything that touches a person's record, a wait time, a claim status, or a dollar amount. The build is measured not by how the demo feels but by a 38 item eval suite that runs on every change.
+Services Australia publishes everything a person needs to know, organised by the name of the payment. People arrive with a situation, not a payment name, so they fail at the first step and call instead: about 30.5 million calls in 2024 to 25, 12% of them abandoned, 28% abandoned in aged care payment assistance. This prototype takes one plain language sentence in any language, retrieves from the public individuals content, and returns the payment families that apply, who each is for, the eligibility signals, the ordered next actions, and a source link with the page's own last updated date against every claim. It refuses, by design, anything that touches a person's record, a wait time, a claim status, or a dollar amount. The build is measured not by how the demo feels but by a 43 item eval suite that runs on every change.
 
 ---
 
@@ -70,11 +70,11 @@ flowchart TD
 
 | Layer | Choice | Reason |
 |---|---|---|
-| Ingest | Python, httpx, trafilatura | Boilerplate stripping is solved, do not write it |
+| Ingest | Python standard library, `trafilatura` used when installed | Zero install is worth more here than the last few points of extraction quality, so the stdlib extractor is the default and trafilatura is an optional upgrade |
 | Store | Single SQLite file, FTS5 for lexical | No infrastructure to provision, the whole corpus ships in the repo artefact |
 | Vectors | Embeddings stored as blobs, brute force cosine | At a few thousand chunks this is milliseconds: a vector database is pure ceremony here |
-| Synthesis | Claude, strict JSON output, temperature 0 | Contract enforcement matters more than prose quality |
-| API | FastAPI, one module | |
+| Synthesis | Claude, strict JSON output, temperature 0, behind a provider interface | Contract enforcement matters more than prose quality, and the interface lets the suite run offline against a deterministic stub |
+| API | `http.server`, one module | A framework would be the only dependency in the project, to serve two endpoints |
 | UI | One static page, vanilla JS, Australian Government Design System tokens | Familiar visual language, zero build step |
 | Deploy | Single container, or static demo mode behind a flag | See section 9 |
 
@@ -137,12 +137,12 @@ Rule 3 is the cheap one that kills most of the damage: the model cannot introduc
 
 This is the day that separates the build from a weekend demo, and it is the artefact that carries the career argument. It is written before the interface, not after.
 
-**Suite: 30 golden questions plus 8 refusal probes.** See `evals/golden_questions.md`.
+**Suite: 31 golden questions, 8 refusal probes, 4 over refusal controls.** See `evals/golden_questions.md`.
 
 | Metric | Definition | Gate to pass |
 |---|---|---|
 | Payment recall | The expected payment family appears in the answer | 90% |
-| Compound recall | Both families appear on the multi situation items | 80% |
+| Compound recall | Every expected family appears on the 12 compound items | 80% |
 | Citation faithfulness | Every claim resolves to a retrieved chunk that supports it | 100%, no exceptions |
 | Fabricated payment rate | A payment name not present in any cited chunk | 0% |
 | Refusal precision | Refusal probes correctly refused | 8 of 8 |

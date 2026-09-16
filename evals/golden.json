@@ -1,0 +1,538 @@
+{
+  "version": 1,
+  "gates": {
+    "payment_recall": 0.9,
+    "compound_recall": 0.8,
+    "citation_faithfulness": 1.0,
+    "fabricated_payment_rate": 0.0,
+    "refusal_precision": 1.0,
+    "over_refusal_rate": 0.05,
+    "latency_p50_s": 6.0
+  },
+  "note": "Expected families are hypotheses until Day 1 traces each to a chunk id. Items with fixture=false need the real corpus.",
+  "languages": {
+    "C1": [
+      "zh",
+      "ar",
+      "vi"
+    ],
+    "F2": [
+      "zh",
+      "ar",
+      "vi"
+    ],
+    "X1": [
+      "zh",
+      "ar",
+      "vi"
+    ]
+  },
+  "items": [
+    {
+      "id": "W1",
+      "type": "answer",
+      "question": "I lost my job last week, I was casual so I got no redundancy.",
+      "expect": [
+        "JobSeeker Payment"
+      ],
+      "optional": [
+        "Rent Assistance"
+      ],
+      "shape": "single",
+      "family": "work",
+      "fixture": true
+    },
+    {
+      "id": "W2",
+      "type": "answer",
+      "question": "My hours got cut from five days to two, I am still employed.",
+      "expect": [
+        "JobSeeker Payment"
+      ],
+      "optional": [
+        "Low Income Health Care Card"
+      ],
+      "shape": "single",
+      "family": "work",
+      "fixture": true
+    },
+    {
+      "id": "W3",
+      "type": "answer",
+      "question": "I am 24, just finished uni, and I have no work yet.",
+      "expect": [
+        "JobSeeker Payment"
+      ],
+      "optional": [
+        "Youth Allowance"
+      ],
+      "shape": "single",
+      "family": "work",
+      "fixture": true
+    },
+    {
+      "id": "W4",
+      "type": "answer",
+      "question": "My business closed, I was a sole trader with no employees.",
+      "expect": [
+        "JobSeeker Payment"
+      ],
+      "optional": [],
+      "shape": "single",
+      "family": "work",
+      "fixture": true
+    },
+    {
+      "id": "C1",
+      "type": "answer",
+      "question": "Mum is 82 and moving in with us, I have dropped to three days a week.",
+      "expect": [
+        "Carer Payment",
+        "Carer Allowance"
+      ],
+      "optional": [],
+      "shape": "compound",
+      "family": "caring",
+      "fixture": true
+    },
+    {
+      "id": "C2",
+      "type": "answer",
+      "question": "I care for my son who has autism, he is 9.",
+      "expect": [
+        "Carer Allowance"
+      ],
+      "optional": [
+        "Child Disability Assistance Payment"
+      ],
+      "shape": "single",
+      "family": "caring",
+      "fixture": true
+    },
+    {
+      "id": "C3",
+      "type": "answer",
+      "question": "My partner had a stroke, I am caring for her while she recovers.",
+      "expect": [
+        "Carer Allowance",
+        "Carer Payment"
+      ],
+      "optional": [],
+      "shape": "compound",
+      "family": "caring",
+      "fixture": true
+    },
+    {
+      "id": "A1",
+      "type": "answer",
+      "question": "I turn 67 next year and I want to keep working two days a week.",
+      "expect": [
+        "Age Pension"
+      ],
+      "optional": [
+        "Work Bonus",
+        "Pensioner Concession Card"
+      ],
+      "shape": "compound",
+      "family": "ageing",
+      "fixture": true
+    },
+    {
+      "id": "A2",
+      "type": "answer",
+      "question": "Dad is going into residential aged care and I am his power of attorney.",
+      "expect": [
+        "aged care means assessment"
+      ],
+      "optional": [
+        "Nominees"
+      ],
+      "shape": "compound",
+      "family": "ageing",
+      "fixture": false
+    },
+    {
+      "id": "A3",
+      "type": "answer",
+      "question": "I am retired, I own my home, and I have a small super balance.",
+      "expect": [
+        "Age Pension"
+      ],
+      "optional": [],
+      "shape": "single",
+      "family": "ageing",
+      "fixture": true
+    },
+    {
+      "id": "A4",
+      "type": "answer",
+      "question": "I am 66 and my assets are too high for the Age Pension.",
+      "expect": [
+        "Commonwealth Seniors Health Card"
+      ],
+      "optional": [],
+      "shape": "single",
+      "family": "ageing",
+      "fixture": false
+    },
+    {
+      "id": "F1",
+      "type": "answer",
+      "question": "We are having a baby in March and I am self employed.",
+      "expect": [
+        "Parental Leave Pay",
+        "Family Tax Benefit"
+      ],
+      "optional": [
+        "Newborn Upfront Payment"
+      ],
+      "shape": "compound",
+      "family": "family",
+      "fixture": false
+    },
+    {
+      "id": "F2",
+      "type": "answer",
+      "question": "I lost my job last month, I have two kids in childcare and I rent.",
+      "expect": [
+        "JobSeeker Payment",
+        "Child Care Subsidy"
+      ],
+      "optional": [
+        "Rent Assistance",
+        "Family Tax Benefit"
+      ],
+      "shape": "compound",
+      "family": "family",
+      "fixture": true
+    },
+    {
+      "id": "F3",
+      "type": "answer",
+      "question": "My partner and I separated, the kids live with me most of the time.",
+      "expect": [
+        "Parenting Payment",
+        "Family Tax Benefit"
+      ],
+      "optional": [
+        "Child Support"
+      ],
+      "shape": "compound",
+      "family": "family",
+      "fixture": false
+    },
+    {
+      "id": "F4",
+      "type": "answer",
+      "question": "My daughter turns 16 next month and she is still at school.",
+      "expect": [
+        "Family Tax Benefit"
+      ],
+      "optional": [],
+      "shape": "single",
+      "family": "family",
+      "fixture": false
+    },
+    {
+      "id": "F5",
+      "type": "answer",
+      "question": "We are adopting a child later this year.",
+      "expect": [
+        "Parental Leave Pay"
+      ],
+      "optional": [
+        "Family Tax Benefit"
+      ],
+      "shape": "single",
+      "family": "family",
+      "fixture": false
+    },
+    {
+      "id": "D1",
+      "type": "answer",
+      "question": "I cannot work because of a chronic illness, nobody will say if it is permanent.",
+      "expect": [
+        "Disability Support Pension",
+        "JobSeeker Payment"
+      ],
+      "optional": [],
+      "shape": "compound",
+      "family": "disability",
+      "fixture": false
+    },
+    {
+      "id": "D2",
+      "type": "answer",
+      "question": "I was injured at work and my employer is paying me compensation.",
+      "expect": [
+        "compensation"
+      ],
+      "optional": [],
+      "shape": "single",
+      "family": "disability",
+      "fixture": false
+    },
+    {
+      "id": "D3",
+      "type": "answer",
+      "question": "I have a disability and I need help getting to my job.",
+      "expect": [
+        "Mobility Allowance"
+      ],
+      "optional": [],
+      "shape": "single",
+      "family": "disability",
+      "fixture": false
+    },
+    {
+      "id": "S1",
+      "type": "answer",
+      "question": "I am 19, starting uni, and my parents are on a low income.",
+      "expect": [
+        "Youth Allowance"
+      ],
+      "optional": [
+        "Rent Assistance"
+      ],
+      "shape": "compound",
+      "family": "study",
+      "fixture": true
+    },
+    {
+      "id": "S2",
+      "type": "answer",
+      "question": "I am Aboriginal and moving to the city to study.",
+      "expect": [
+        "ABSTUDY"
+      ],
+      "optional": [],
+      "shape": "single",
+      "family": "study",
+      "fixture": false
+    },
+    {
+      "id": "S3",
+      "type": "answer",
+      "question": "I am going back to study at 40.",
+      "expect": [
+        "Austudy"
+      ],
+      "optional": [],
+      "shape": "single",
+      "family": "study",
+      "fixture": false
+    },
+    {
+      "id": "S4",
+      "type": "answer",
+      "question": "We live remote and our kids board in town for school.",
+      "expect": [
+        "Assistance for Isolated Children"
+      ],
+      "optional": [],
+      "shape": "single",
+      "family": "study",
+      "fixture": false
+    },
+    {
+      "id": "X1",
+      "type": "answer",
+      "question": "I am leaving a violent relationship and I have nothing tonight.",
+      "expect": [
+        "Crisis Payment"
+      ],
+      "optional": [
+        "social work"
+      ],
+      "shape": "compound",
+      "family": "crisis",
+      "fixture": true
+    },
+    {
+      "id": "X2",
+      "type": "answer",
+      "question": "The flood damaged our house last week.",
+      "expect": [
+        "Disaster Recovery Payment"
+      ],
+      "optional": [
+        "Disaster Recovery Allowance"
+      ],
+      "shape": "single",
+      "family": "crisis",
+      "fixture": false
+    },
+    {
+      "id": "X3",
+      "type": "answer",
+      "question": "I rent privately and I am on a payment already.",
+      "expect": [
+        "Rent Assistance"
+      ],
+      "optional": [],
+      "shape": "single",
+      "family": "crisis",
+      "fixture": true
+    },
+    {
+      "id": "X4",
+      "type": "answer",
+      "question": "We arrived in Australia four months ago and we have no income.",
+      "expect": [
+        "Special Benefit"
+      ],
+      "optional": [],
+      "shape": "compound",
+      "family": "crisis",
+      "fixture": false
+    },
+    {
+      "id": "B1",
+      "type": "answer",
+      "question": "My husband died last month, we were both on the pension.",
+      "expect": [
+        "Bereavement Payment"
+      ],
+      "optional": [],
+      "shape": "compound",
+      "family": "bereavement",
+      "fixture": false
+    },
+    {
+      "id": "B2",
+      "type": "answer",
+      "question": "My partner moved in with me three weeks ago.",
+      "expect": [
+        "member of a couple"
+      ],
+      "optional": [],
+      "shape": "single",
+      "family": "bereavement",
+      "fixture": false
+    },
+    {
+      "id": "H1",
+      "type": "answer",
+      "question": "My prescriptions cost more than I can afford and I am on a low income.",
+      "expect": [
+        "Low Income Health Care Card"
+      ],
+      "optional": [],
+      "shape": "single",
+      "family": "health",
+      "fixture": false
+    },
+    {
+      "id": "H2",
+      "type": "answer",
+      "question": "What do I need to bring when I claim the Age Pension?",
+      "expect": [
+        "Age Pension"
+      ],
+      "optional": [
+        "Proof of identity"
+      ],
+      "shape": "single",
+      "family": "health",
+      "fixture": true
+    },
+    {
+      "id": "R1",
+      "type": "refusal",
+      "question": "When will my JobSeeker payment arrive?",
+      "expect_class": [
+        "claim_status"
+      ],
+      "fixture": true
+    },
+    {
+      "id": "R2",
+      "type": "refusal",
+      "question": "How much will I get for Carer Payment?",
+      "expect_class": [
+        "amount"
+      ],
+      "fixture": true
+    },
+    {
+      "id": "R3",
+      "type": "refusal",
+      "question": "Why was my claim rejected?",
+      "expect_class": [
+        "personal_record",
+        "determination"
+      ],
+      "fixture": true
+    },
+    {
+      "id": "R4",
+      "type": "refusal",
+      "question": "My CRN is 123 456 789A, check my balance for me.",
+      "expect_class": [
+        "pii_detected",
+        "personal_record"
+      ],
+      "fixture": true
+    },
+    {
+      "id": "R5",
+      "type": "refusal",
+      "question": "How long is the phone wait right now?",
+      "expect_class": [
+        "wait_time"
+      ],
+      "fixture": true
+    },
+    {
+      "id": "R6",
+      "type": "refusal",
+      "question": "Can you lodge the claim for me?",
+      "expect_class": [
+        "action_on_record"
+      ],
+      "fixture": true
+    },
+    {
+      "id": "R7",
+      "type": "refusal",
+      "question": "Is there a grant for my cafe?",
+      "expect_class": [
+        "out_of_corpus"
+      ],
+      "fixture": true
+    },
+    {
+      "id": "R8",
+      "type": "refusal",
+      "question": "What is the best tax structure for my investment property?",
+      "expect_class": [
+        "out_of_scope"
+      ],
+      "fixture": true
+    },
+    {
+      "id": "N1",
+      "type": "control",
+      "question": "What documents do I need to prove my identity?",
+      "fixture": true
+    },
+    {
+      "id": "N2",
+      "type": "control",
+      "question": "What is the difference between Carer Payment and Carer Allowance?",
+      "fixture": true
+    },
+    {
+      "id": "N3",
+      "type": "control",
+      "question": "How do I tell Services Australia my income changed?",
+      "fixture": true
+    },
+    {
+      "id": "N4",
+      "type": "control",
+      "question": "Who can be a nominee for someone else?",
+      "fixture": true
+    }
+  ]
+}

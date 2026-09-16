@@ -1,0 +1,228 @@
+[
+  {
+    "url": "https://example.invalid/fixture/carer-payment",
+    "title": "Carer Payment",
+    "page_last_updated": "2026-07-14",
+    "chunks": [
+      {
+        "heading_path": "Carer Payment",
+        "text": "Carer Payment is an income support payment if you give constant care to someone with a disability, a medical condition, or who is frail aged. It is for people who cannot work full time because of the care they give."
+      },
+      {
+        "heading_path": "Carer Payment > Who can get it",
+        "text": "You give constant care to someone in their home.\nThe person you care for meets a care receiver assessment.\nYou meet an income test and an assets test.\nYou are an Australian resident and you live in Australia."
+      },
+      {
+        "heading_path": "Carer Payment > Carer Payment and Carer Allowance are different",
+        "text": "Carer Payment is income support and replaces wages you cannot earn. Carer Allowance is a supplement for the extra costs of caring. You can get both if you meet the rules for each."
+      },
+      {
+        "heading_path": "Carer Payment > How to claim",
+        "text": "Claim online using your Centrelink account through myGov.\nYou and the person you care for both fill in part of the claim.\nGet your supporting documents ready before you start."
+      },
+      {
+        "heading_path": "Carer Payment > When your situation changes",
+        "text": "Tell us within 14 days if your income changes, if you stop giving care, or if the person you care for goes into hospital or residential aged care."
+      }
+    ]
+  },
+  {
+    "url": "https://example.invalid/fixture/carer-allowance",
+    "title": "Carer Allowance",
+    "page_last_updated": "2026-06-02",
+    "chunks": [
+      {
+        "heading_path": "Carer Allowance",
+        "text": "Carer Allowance is a supplement if you give daily care to someone with a disability, a medical condition, or who is frail aged. You can get it while you work or study."
+      },
+      {
+        "heading_path": "Carer Allowance > Who can get it",
+        "text": "You give daily care to an adult or a child.\nThe person you care for meets a care receiver assessment.\nYou meet a combined family income test.\nYou can get Carer Allowance as well as Carer Payment."
+      },
+      {
+        "heading_path": "Carer Allowance > Caring for a child",
+        "text": "If you care for a child under 16 with a disability or medical condition, the child is assessed with a list of recognised conditions or a care needs assessment."
+      },
+      {
+        "heading_path": "Carer Allowance > How to claim",
+        "text": "Claim online using your Centrelink account. A treating health professional completes part of the medical details for the person you care for."
+      }
+    ]
+  },
+  {
+    "url": "https://example.invalid/fixture/jobseeker-payment",
+    "title": "JobSeeker Payment",
+    "page_last_updated": "2026-08-01",
+    "chunks": [
+      {
+        "heading_path": "JobSeeker Payment",
+        "text": "JobSeeker Payment is financial help if you are between 22 and Age Pension age and you are looking for work, or you cannot work or study for a while because you are sick or injured."
+      },
+      {
+        "heading_path": "JobSeeker Payment > Who can get it",
+        "text": "You are looking for work, including if you were self employed or a sole trader.\nYou meet an income test and an assets test.\nYou meet mutual obligation requirements.\nA liquid assets waiting period may apply if you have savings or a payout."
+      },
+      {
+        "heading_path": "JobSeeker Payment > If you still work some hours",
+        "text": "You can work and still get a part payment. Your payment reduces as your income rises, and stops once your income is high enough."
+      },
+      {
+        "heading_path": "JobSeeker Payment > Reporting your income",
+        "text": "You report your income every fortnight using your Centrelink online account or the express plus app. Tell us within 14 days if your circumstances change."
+      },
+      {
+        "heading_path": "JobSeeker Payment > How to claim",
+        "text": "Set up a myGov account and link Centrelink, then claim online.\nProve your identity before your claim can be assessed."
+      }
+    ]
+  },
+  {
+    "url": "https://example.invalid/fixture/age-pension",
+    "title": "Age Pension",
+    "page_last_updated": "2026-05-20",
+    "chunks": [
+      {
+        "heading_path": "Age Pension",
+        "text": "Age Pension is income support if you are 67 or older and you meet residence rules and the income and assets tests."
+      },
+      {
+        "heading_path": "Age Pension > Who can get it",
+        "text": "You are 67 or older.\nYou are an Australian resident and normally you have been for 10 years.\nYou meet an income test and an assets test. Your home is usually not counted as an asset."
+      },
+      {
+        "heading_path": "Age Pension > Working while you get it",
+        "text": "The Work Bonus reduces how much of your employment income counts in the income test, so you can do some paid work and keep more of your pension."
+      },
+      {
+        "heading_path": "Age Pension > How to claim",
+        "text": "You can claim up to 13 weeks before you reach Age Pension age.\nClaim online using your Centrelink account, or with a paper form.\nYou need to confirm your identity and give details of your income and assets."
+      },
+      {
+        "heading_path": "Age Pension > What documents you need",
+        "text": "Bring proof of identity documents, details of your bank accounts, investments, and any income from overseas. Have your partner's details ready if you have one."
+      }
+    ]
+  },
+  {
+    "url": "https://example.invalid/fixture/child-care-subsidy",
+    "title": "Child Care Subsidy",
+    "page_last_updated": "2026-07-30",
+    "chunks": [
+      {
+        "heading_path": "Child Care Subsidy",
+        "text": "Child Care Subsidy helps with the cost of approved child care. It is paid directly to your child care service to reduce the fees you pay."
+      },
+      {
+        "heading_path": "Child Care Subsidy > Who can get it",
+        "text": "Your child attends an approved child care service.\nYou or your partner meet the activity test, which includes looking for work.\nYour child meets immunisation requirements.\nYour family income affects the percentage you get."
+      },
+      {
+        "heading_path": "Child Care Subsidy > If your income drops",
+        "text": "Update your family income estimate as soon as your income changes so your subsidy is correct and you do not end up owing money."
+      },
+      {
+        "heading_path": "Child Care Subsidy > How to claim",
+        "text": "Claim online using your Centrelink account. You can claim before your child starts care."
+      }
+    ]
+  },
+  {
+    "url": "https://example.invalid/fixture/rent-assistance",
+    "title": "Rent Assistance",
+    "page_last_updated": "2026-04-11",
+    "chunks": [
+      {
+        "heading_path": "Rent Assistance",
+        "text": "Rent Assistance is an extra payment if you pay rent and you already get certain payments from Services Australia."
+      },
+      {
+        "heading_path": "Rent Assistance > Who can get it",
+        "text": "You pay rent to a private landlord, a community housing provider, or for a site or mooring fee.\nYou already get a qualifying payment such as JobSeeker Payment, Age Pension, or Family Tax Benefit Part A.\nYou do not get it for public housing rent."
+      },
+      {
+        "heading_path": "Rent Assistance > How to claim",
+        "text": "You do not usually claim separately. Tell us your rent details in your Centrelink online account and we work out whether you get it with your payment."
+      }
+    ]
+  },
+  {
+    "url": "https://example.invalid/fixture/crisis-payment",
+    "title": "Crisis Payment",
+    "page_last_updated": "2026-03-18",
+    "chunks": [
+      {
+        "heading_path": "Crisis Payment",
+        "text": "Crisis Payment is a one off payment if you are in severe financial hardship because of an extreme circumstance, including family and domestic violence."
+      },
+      {
+        "heading_path": "Crisis Payment > Who can get it",
+        "text": "You are in severe financial hardship.\nYou have left your home because of family and domestic violence, or you have stayed while the person who used violence has left.\nYou claim within 7 days of the extreme circumstance.\nYou are already getting or are eligible for an income support payment."
+      },
+      {
+        "heading_path": "Crisis Payment > Getting help now",
+        "text": "Social workers can help you in an emergency and can talk through your options with you. You can ask to speak to a social worker when you call or visit."
+      },
+      {
+        "heading_path": "Crisis Payment > How to claim",
+        "text": "Call or visit a service centre to claim. You can also start with a social worker who can help you make the claim."
+      }
+    ]
+  },
+  {
+    "url": "https://example.invalid/fixture/youth-allowance-student",
+    "title": "Youth Allowance for students",
+    "page_last_updated": "2026-02-09",
+    "chunks": [
+      {
+        "heading_path": "Youth Allowance for students",
+        "text": "Youth Allowance is financial help if you are 24 or younger and you study full time, or you are an Australian apprentice."
+      },
+      {
+        "heading_path": "Youth Allowance for students > Who can get it",
+        "text": "You are 24 or younger and studying full time in an approved course.\nIf you are under 22 you are usually assessed as dependent, and your parents' income is tested.\nYou may get a higher rate if you need to live away from home to study."
+      },
+      {
+        "heading_path": "Youth Allowance for students > How to claim",
+        "text": "Claim online using your Centrelink account up to 13 weeks before your course starts."
+      }
+    ]
+  },
+  {
+    "url": "https://example.invalid/fixture/proof-of-identity",
+    "title": "Proof of identity",
+    "page_last_updated": "2026-01-22",
+    "chunks": [
+      {
+        "heading_path": "Proof of identity",
+        "text": "Before you can claim a payment you need to confirm who you are. You do this once and it covers your Centrelink, Medicare and Child Support services."
+      },
+      {
+        "heading_path": "Proof of identity > What documents you need",
+        "text": "You need documents that add up to enough identity points.\nA commencement document such as a full birth certificate or a citizenship certificate.\nA primary use in the community document such as a passport or a driver licence.\nA secondary document such as a Medicare card or a bank card."
+      },
+      {
+        "heading_path": "Proof of identity > How to confirm your identity",
+        "text": "You can confirm your identity online in your Centrelink account, or in person at a service centre with your original documents."
+      }
+    ]
+  },
+  {
+    "url": "https://example.invalid/fixture/nominees",
+    "title": "Nominees",
+    "page_last_updated": "2026-06-15",
+    "chunks": [
+      {
+        "heading_path": "Nominees",
+        "text": "A nominee is someone you choose to deal with us for you. A correspondence nominee can get your letters and ask about your payments. A payment nominee can get your payments into their account and act on your behalf."
+      },
+      {
+        "heading_path": "Nominees > Who can be a nominee",
+        "text": "A nominee can be a person you trust, such as a family member or a friend.\nAn organisation such as a public trustee or a care provider can also be a nominee.\nBoth you and the person you choose have to agree in writing."
+      },
+      {
+        "heading_path": "Nominees > How to arrange one",
+        "text": "You and your nominee each complete a form and give it to us. You can end the arrangement at any time."
+      }
+    ]
+  }
+]
