@@ -20,7 +20,6 @@ your own circumstances, use myGov or call Services Australia.
 ```bash
 git clone https://github.com/vishal8shah/Services-Australia-demo.git
 cd Services-Australia-demo
-git checkout claude/services-australia-answer-layer-m1u13i
 make hooks          # blocks committing a key, takes a second, do it first
 cp .env.example .env
 make doctor
