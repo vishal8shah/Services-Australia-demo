@@ -15,6 +15,7 @@ including defects the eval suite caught. Add to it rather than rediscovering the
 ## Commands
 
 ```bash
+make check     # Python 3.11+ and sqlite FTS5, runs before every other target
 make doctor    # which keys and providers actually work, run this first
 make test      # 74 unit tests, offline, nothing to install
 make eval      # golden suite on the synthetic fixture corpus
@@ -38,7 +39,8 @@ make serve     # API and the single page on http://127.0.0.1:8000
 ## Rules that are not up for negotiation
 
 1. **The core runs on the standard library.** Optional extras are optional. A fresh
-   clone must pass `make test` with nothing installed.
+   clone must pass `make test` with nothing installed. Override the interpreter with
+   `make PYTHON=python3.12 <target>` rather than adding a virtualenv requirement.
 2. **Never weaken a validator rule to make an answer pass.** The six rules in
    `docs/answer_contract.md` are the product. If a rule blocks a good answer, the
    retrieval or the prompt is wrong, not the rule.

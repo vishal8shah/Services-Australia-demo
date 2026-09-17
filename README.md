@@ -20,10 +20,14 @@ your own circumstances, use myGov or call Services Australia.
 ```bash
 git clone https://github.com/vishal8shah/Services-Australia-demo.git
 cd Services-Australia-demo
+make check          # Python 3.11+ and sqlite FTS5, fails with the fix if not
 make hooks          # blocks committing a key, takes a second, do it first
 cp .env.example .env
 make doctor
 ```
+
+macOS still ships Python 3.9 as `python3`. If `make check` says so, point make at a
+newer one and it stays pointed for that command: `make PYTHON=python3.12 test`.
 
 `data/` is not in git: the corpus is rebuilt with `make crawl && make index`, which
 keeps crawled government content out of the repository and the clone small.
