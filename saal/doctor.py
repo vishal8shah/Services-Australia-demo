@@ -23,6 +23,21 @@ def line(status: str, role: str, detail: str) -> None:
     print(f"[{status}] {role:<22} {detail}")
 
 
+def check_environment() -> bool:
+    ok = sys.version_info >= (3, 11)
+    line(OK if ok else BAD, "python",
+         f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
+         + ("" if ok else ", this project needs 3.11 or newer"))
+    if config.ENV_LOADED:
+        for path in config.ENV_LOADED:
+            line(OK, "env file", f"loaded {path}")
+    else:
+        line(SKIP, "env file",
+             "none found, reading the shell environment only. cp .env.example .env")
+    print()
+    return ok
+
+
 def check_keys() -> None:
     print("keys found in the environment")
     for env in ("OPENAI_API_KEY", "ANTHROPIC_API_KEY", "GEMINI_API_KEY", "VOYAGE_API_KEY"):
@@ -106,9 +121,12 @@ def check_corpus() -> bool:
 
 def main() -> int:
     print(f"demo mode: {config.DEMO_MODE}\n")
+    print("environment")
+    environment_ok = check_environment()
     check_keys()
     print("roles")
-    results = [check_embeddings(), check_synthesis(), check_expansion(), check_corpus()]
+    results = [environment_ok, check_embeddings(), check_synthesis(),
+               check_expansion(), check_corpus()]
     print()
     if all(results):
         print("all configured roles are working")

@@ -165,3 +165,22 @@ with the provider's own message attached. `make doctor` makes one cheap call per
 configured role so all of this is found before a crawl, not during a demo. The
 transport is unit tested against a fake urlopen, so the request shape, the JSON
 parsing and both failure modes are covered without a key, a network or a balance.
+
+## D11. Secrets have two guards, because one is not enough
+
+**Chosen.** `.env` is gitignored, loaded automatically by every entry point, and
+never overrides a value already in the shell. `make hooks` installs a pre commit
+hook that refuses to commit an env file or anything shaped like an API key.
+
+**Why both.** Before this, `.gitignore` covered `data/` and `__pycache__` but not
+`.env`, so the first real key written to disk would have been committed on the next
+`git add -A`. Ignoring the file fixes that one path. The hook covers the other one,
+a key pasted into a source file or a notebook, which no ignore rule catches. Both
+were tested by staging a fake key and watching the commit fail.
+
+**Why the shell wins over the file.** A stale `.env` silently overriding the key you
+just exported is an hour of debugging that should not be available to anyone. The
+loader uses `setdefault`, and there is a test for exactly that.
+
+**No python-dotenv.** It is twenty lines, and it would be the only thing standing
+between a fresh clone and a working `make test`.

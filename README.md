@@ -15,6 +15,25 @@ your own circumstances, use myGov or call Services Australia.
 
 ---
 
+## Work on it locally
+
+```bash
+git clone https://github.com/vishal8shah/Services-Australia-demo.git
+cd Services-Australia-demo
+git checkout claude/services-australia-answer-layer-m1u13i
+make hooks          # blocks committing a key, takes a second, do it first
+cp .env.example .env
+make doctor
+```
+
+`data/` is not in git: the corpus is rebuilt with `make crawl && make index`, which
+keeps crawled government content out of the repository and the clone small.
+
+`make hooks` installs a pre commit hook that refuses to commit an env file or
+anything shaped like an API key. `.env` is gitignored, and `.env` is read
+automatically by every entry point, so nothing needs `set -a` or a shell profile
+edit. Anything exported in your shell wins over the file.
+
 ## Run it
 
 Nothing to install. Python 3.11 and the standard library.
@@ -40,14 +59,16 @@ make eval-real                  # the suite against the crawled corpus
 
 ## Add your key
 
-One key covers all three roles. Copy `.env.example`, fill in the key, check it:
+One key covers all three roles. Put it in `.env` and check it:
 
 ```bash
 cp .env.example .env
 # edit .env, then
-set -a && . ./.env && set +a
 make doctor
 ```
+
+`.env` is loaded automatically and is gitignored. `SAAL_ENV_FILE=/path/to/secrets`
+points somewhere outside the working tree if you would rather keep it there.
 
 `make doctor` makes one cheap call per configured role and tells you which are
 live. Run it before the crawl, not after.

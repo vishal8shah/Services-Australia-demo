@@ -1,0 +1,25 @@
+#!/bin/sh
+# Blocks the two ways a key leaves this machine: an env file, or a key pasted
+# into a source file. Install with `make hooks`.
+#
+# The patterns are assembled at runtime so this script does not match itself.
+
+fail() { printf '\n  BLOCKED: %s\n\n' "$1" >&2; exit 1; }
+
+staged=$(git diff --cached --name-only --diff-filter=ACM)
+
+env_files=$(printf '%s\n' "$staged" | grep -E '(^|/)\.env($|\.)' | grep -v '\.env\.example$')
+if [ -n "$env_files" ]; then
+  fail "env file staged: $env_files
+  Keys belong in .env, which is gitignored. Unstage it with: git restore --staged $env_files"
+fi
+
+sk='sk'; goog='AIza'; vy='pa'
+pattern="(${sk}-[A-Za-z0-9_-]{24,}|${goog}[0-9A-Za-z_-]{30,}|${vy}-[A-Za-z0-9_-]{24,})"
+hits=$(git diff --cached -U0 | grep -E "^\+" | grep -nE "$pattern")
+if [ -n "$hits" ]; then
+  fail "what looks like an API key is in the staged changes:
+$hits"
+fi
+
+exit 0

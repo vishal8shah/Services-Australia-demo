@@ -1,9 +1,10 @@
 PROVIDER ?= openai
 
-.PHONY: help test eval eval-oracle eval-real doctor measure serve crawl index clean
+.PHONY: help test eval eval-oracle eval-real doctor hooks measure serve crawl index clean
 
 help:
 	@echo "make doctor      check which keys and providers actually work"
+	@echo "make hooks       install the pre commit hook that blocks committing a key"
 	@echo "make test        run the unit tests, offline, nothing to install"
 	@echo "make eval        golden suite on the synthetic fixture corpus"
 	@echo "make eval-oracle the same, with hand written expansions, an upper bound"
@@ -15,6 +16,10 @@ help:
 
 doctor:
 	python3 -m saal.doctor
+
+hooks:
+	@cp scripts/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit \
+		&& echo "installed .git/hooks/pre-commit"
 
 test:
 	python3 -m unittest discover -s tests

@@ -1,5 +1,14 @@
-__pycache__/
-*.pyc
+# Secrets. Never commit a key.
+.env
+.env.*
+!.env.example
+
+# The corpus is rebuilt by `make crawl && make index`, not stored here.
 data/
 !data/.gitkeep
+
+__pycache__/
+*.pyc
 .venv/
+venv/
+.DS_Store

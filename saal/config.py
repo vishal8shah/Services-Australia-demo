@@ -9,6 +9,44 @@ import os
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+
+
+def _load_env_file(path: Path) -> bool:
+    """Read KEY=value lines into the environment without overriding anything.
+
+    Deliberately never overrides. A value exported in the shell, or set by a CI
+    runner, has to win over a file on disk: the alternative is a stale .env
+    quietly overriding the key you just exported, which is a confusing hour.
+
+    No dependency for this. It is twenty lines, and python-dotenv would be the
+    only thing standing between a fresh clone and a working `make test`.
+    """
+    if not path.exists():
+        return False
+    for raw in path.read_text().splitlines():
+        line = raw.strip()
+        if not line or line.startswith("#"):
+            continue
+        line = line.removeprefix("export ").strip()
+        key, sep, value = line.partition("=")
+        if not sep:
+            continue
+        key, value = key.strip(), value.strip()
+        if value[:1] in {'"', "'"} and value[-1:] == value[:1]:
+            value = value[1:-1]
+        elif " #" in value:
+            value = value.split(" #", 1)[0].strip()
+        os.environ.setdefault(key, value)
+    return True
+
+
+# Loaded before anything below reads the environment. SAAL_ENV_FILE points
+# somewhere else when you keep secrets outside the working tree.
+ENV_FILES = [Path(os.environ["SAAL_ENV_FILE"])] if os.environ.get("SAAL_ENV_FILE") else [
+    ROOT / ".env.local", ROOT / ".env"]
+ENV_LOADED = [str(p) for p in ENV_FILES if _load_env_file(p)]
+
+# Paths
 DATA = Path(os.environ.get("SAAL_DATA", ROOT / "data"))
 RAW = DATA / "raw"
 DB_PATH = Path(os.environ.get("SAAL_DB", DATA / "corpus.db"))
