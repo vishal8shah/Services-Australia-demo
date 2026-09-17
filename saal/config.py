@@ -48,17 +48,41 @@ STALE_AFTER_DAYS = int(os.environ.get("SAAL_STALE_AFTER_DAYS", "548"))  # 18 mon
 EMBED_PROVIDER = os.environ.get("SAAL_EMBED_PROVIDER", "hashing")
 EMBED_DIMS = int(os.environ.get("SAAL_EMBED_DIMS", "1024"))
 CHAR_NGRAM_WEIGHT = float(os.environ.get("SAAL_CHAR_NGRAM_WEIGHT", "0.35"))
+
+# stub and fixture need no key and no network. anthropic and openai need theirs.
 LLM_PROVIDER = os.environ.get("SAAL_LLM_PROVIDER", "stub")
 # Query expansion bridges the person's words to the vocabulary of the pages.
-# "claude" needs ANTHROPIC_API_KEY and costs one small call per question.
+# Set to anthropic or openai. It costs one small call per question.
 EXPANDER = os.environ.get("SAAL_EXPANDER", "none")
-EXPANSION_MODEL = os.environ.get("SAAL_EXPANSION_MODEL", "claude-haiku-4-5-20251001")
+JUDGE_PROVIDER = os.environ.get("SAAL_JUDGE_PROVIDER", "")
+
+ANTHROPIC_BASE = os.environ.get("ANTHROPIC_BASE_URL", "https://api.anthropic.com")
+OPENAI_BASE = os.environ.get("OPENAI_BASE_URL", "https://api.openai.com")
+
+# Model names change and get retired, so every one of these is overridable and
+# none of them is hard coded at a call site. Check what your key can see with:
+#   curl https://api.openai.com/v1/models -H "Authorization: Bearer $OPENAI_API_KEY"
+DEFAULT_MODELS = {"anthropic": "claude-sonnet-5", "openai": "gpt-4o-mini"}
+FAST_MODELS = {"anthropic": "claude-haiku-4-5-20251001", "openai": "gpt-4o-mini"}
+OPENAI_EMBED_MODEL = os.environ.get("SAAL_OPENAI_EMBED_MODEL", "text-embedding-3-small")
+# Cosine runs in pure Python, so dimensions are latency. text-embedding-3-*
+# supports shortening natively and stays usable well below its full width.
+OPENAI_EMBED_DIMS = int(os.environ.get("SAAL_OPENAI_EMBED_DIMS", "512"))
+
+
+def model_for(provider: str) -> str:
+    """The model for synthesis, unless SAAL_MODEL overrides it."""
+    return os.environ.get("SAAL_MODEL") or DEFAULT_MODELS.get(provider, "")
+
+
+def fast_model_for(provider: str) -> str:
+    """Expansion and judging want the cheap fast model, not the good one."""
+    return os.environ.get("SAAL_FAST_MODEL") or FAST_MODELS.get(provider, "")
+
+
 # Evidence reached through an expansion is second hand, so it counts for less
 # in the refusal decision than evidence matching what the person actually said.
 EXPANSION_WEIGHT = float(os.environ.get("SAAL_EXPANSION_WEIGHT", "0.5"))
-LLM_MODEL = os.environ.get("SAAL_MODEL", "claude-sonnet-5")
-JUDGE_MODEL = os.environ.get("SAAL_JUDGE_MODEL", "claude-opus-5")
-ANTHROPIC_BASE = os.environ.get("ANTHROPIC_BASE_URL", "https://api.anthropic.com")
 
 # Presentation
 DEMO_MODE = os.environ.get("SAAL_DEMO_MODE", "live")  # live | static

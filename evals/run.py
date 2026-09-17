@@ -6,7 +6,8 @@ Failing runs get committed too: a suite that only records its wins proves nothin
 
     python3 -m evals.run                 # offline, synthetic corpus, stub provider
     python3 -m evals.run --corpus real   # the crawled corpus in data/corpus.db
-    python3 -m evals.run --judge anthropic --strict   # what CI should run
+    python3 -m evals.run --corpus real --provider openai --expander openai \
+        --judge openai --strict                      # what CI should run
 """
 from __future__ import annotations
 
@@ -22,7 +23,8 @@ from pathlib import Path
 
 from saal import config, pipeline, store
 from saal.answer import contract
-from saal.answer.providers import AnthropicProvider, ProviderError, get_provider
+from saal.answer.providers import ProviderError, get_provider
+from saal.llm import LLMError, chat
 from saal.testing import fixture_conn
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -176,7 +178,8 @@ JUDGE_SYSTEM = (
 )
 
 
-def judge_faithfulness(conn, rows_responses: list[tuple[dict, dict]], model: str) -> dict:
+def judge_faithfulness(conn, rows_responses: list[tuple[dict, dict]],
+                       provider: str) -> dict:
     """One rubric question per claim: does this chunk support this claim.
 
     A model is used here and nowhere else in the scorer, because this is the one
@@ -184,11 +187,7 @@ def judge_faithfulness(conn, rows_responses: list[tuple[dict, dict]], model: str
     on purpose: a suite that leans on a model to decide whether it passed is a
     suite with a model sized hole in it.
     """
-    key = os.environ.get("ANTHROPIC_API_KEY")
-    if not key:
-        raise ProviderError("ANTHROPIC_API_KEY is not set, cannot judge")
-    import urllib.request
-
+    model = config.fast_model_for(provider)
     checked = supported = 0
     failures: list[str] = []
     for item, response in rows_responses:
@@ -203,21 +202,10 @@ def judge_faithfulness(conn, rows_responses: list[tuple[dict, dict]], model: str
                 if not chunk or not claim.strip():
                     continue
                 checked += 1
-                body = {
-                    "model": model, "max_tokens": 5, "temperature": 0,
-                    "system": JUDGE_SYSTEM,
-                    "messages": [{"role": "user", "content":
-                                  f"CHUNK\n{chunk.heading_path}\n{chunk.text}"
-                                  f"\n\nCLAIM\n{claim}"}],
-                }
-                req = urllib.request.Request(
-                    f"{config.ANTHROPIC_BASE.rstrip('/')}/v1/messages",
-                    data=json.dumps(body).encode(),
-                    headers={"x-api-key": key, "anthropic-version": "2023-06-01",
-                             "content-type": "application/json"})
-                with urllib.request.urlopen(req, timeout=60) as resp:
-                    payload = json.load(resp)
-                verdict = "".join(b.get("text", "") for b in payload.get("content", []))
+                verdict = chat(JUDGE_SYSTEM,
+                               f"CHUNK\n{chunk.heading_path}\n{chunk.text}\n\nCLAIM\n{claim}",
+                               provider=provider, model=model, max_tokens=5,
+                               json_mode=False, timeout=60)
                 if verdict.strip().lower().startswith("yes"):
                     supported += 1
                 else:
@@ -310,8 +298,9 @@ def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--corpus", choices=["fixture", "real"], default="fixture")
     ap.add_argument("--provider", default=None, help="stub, fixture or anthropic")
-    ap.add_argument("--judge", choices=["none", "anthropic"], default="none")
-    ap.add_argument("--expander", choices=["none", "oracle", "claude"], default="none",
+    ap.add_argument("--judge", choices=["none", "anthropic", "openai"], default="none")
+    ap.add_argument("--expander", choices=["none", "oracle", "anthropic", "openai"],
+                    default="none",
                     help="oracle is a hand written upper bound, not a measurement")
     ap.add_argument("--only", default="", help="comma separated item ids")
     ap.add_argument("--strict", action="store_true", help="exit non zero when a gate fails")
@@ -339,8 +328,8 @@ def main(argv: list[str] | None = None) -> int:
     oracle = json.loads(EXPANSIONS.read_text())["phrases"] if args.expander == "oracle" else {}
     if args.expander == "oracle":
         note = "ORACLE EXPANSION, an upper bound. " + note
-    elif args.expander == "claude":
-        note = "Query expansion by the Claude expander. " + note
+    elif args.expander != "none":
+        note = f"Query expansion by the {args.expander} expander. " + note
     counts = store.counts(conn)
     if not counts["chunks"]:
         print("corpus is empty: run `make crawl` then `make index`", file=sys.stderr)
@@ -351,9 +340,9 @@ def main(argv: list[str] | None = None) -> int:
     for item in items:
         if args.expander == "oracle":
             expander = OracleExpander(oracle.get(item["id"], []))
-        elif args.expander == "claude":
+        elif args.expander != "none":
             from saal.retrieve.expand import get_expander
-            expander = get_expander("claude")
+            expander = get_expander(args.expander)
         else:
             expander = None
         response = pipeline.answer(item["question"], conn=conn, provider=provider,
@@ -366,7 +355,7 @@ def main(argv: list[str] | None = None) -> int:
     faithfulness = None
     if args.judge == "anthropic":
         try:
-            faithfulness = judge_faithfulness(conn, responses, config.JUDGE_MODEL)
+            faithfulness = judge_faithfulness(conn, responses, args.judge)
         except Exception as exc:  # noqa: BLE001 a missing judge must not lose the run
             print(f"judge unavailable, faithfulness not scored: {exc}", file=sys.stderr)
 

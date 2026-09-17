@@ -76,9 +76,10 @@ flowchart TD
 | Ingest | Python standard library, `trafilatura` used when installed | Zero install is worth more here than the last few points of extraction quality, so the stdlib extractor is the default and trafilatura is an optional upgrade |
 | Store | Single SQLite file, FTS5 for lexical | No infrastructure to provision, the whole corpus ships in the repo artefact |
 | Vectors | Embeddings stored as blobs, brute force cosine | At a few thousand chunks this is milliseconds: a vector database is pure ceremony here |
-| Embedding provider | Pluggable: `hashing` offline, or `gemini` free tier, `local` model, `voyage` paid | The offline one bridges spelling, never meaning, and the scorecard shows exactly what that costs |
-| Query expansion | Claude, one small call, optional | Cheaper than an embedding provider and it uses the key synthesis needs anyway |
-| Synthesis | Claude, strict JSON output, temperature 0, behind a provider interface | Contract enforcement matters more than prose quality, and the interface lets the suite run offline against a deterministic stub |
+| Embedding provider | Pluggable: `hashing` offline, or `openai`, `gemini` free tier, `local` model, `voyage` | The offline one bridges spelling, never meaning, and the scorecard shows exactly what that costs |
+| Query expansion | One small call, optional, same key as synthesis | Cheaper than an embedding provider and it needs no second account |
+| Model access | OpenAI or Anthropic, one shared transport, every model name overridable | Model names get retired, and a hard coded one is a demo that stops working on someone else's schedule |
+| Synthesis | OpenAI or Claude, strict JSON output, temperature 0, behind a provider interface | Contract enforcement matters more than prose quality, and the interface lets the suite run offline against a deterministic stub |
 | API | `http.server`, one module | A framework would be the only dependency in the project, to serve two endpoints |
 | UI | One static page, vanilla JS, Australian Government Design System tokens | Familiar visual language, zero build step |
 | Deploy | Single container, or static demo mode behind a flag | See section 9 |

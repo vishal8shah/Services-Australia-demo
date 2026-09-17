@@ -7,12 +7,13 @@ to "constant care", because the two share no characters worth sharing.
 
 Closing that gap costs either a hosted embedder or a local model:
 
+    SAAL_EMBED_PROVIDER=openai  OPENAI_API_KEY=...   # text-embedding-3-small
     SAAL_EMBED_PROVIDER=gemini  GEMINI_API_KEY=...   # free tier, no card
     SAAL_EMBED_PROVIDER=voyage  VOYAGE_API_KEY=...   # paid
     SAAL_EMBED_PROVIDER=local                        # pip install sentence-transformers
 
 Or skip the embedder question entirely and expand the query instead, which uses the
-Anthropic key the synthesis step already needs. See `saal/retrieve/expand.py`.
+same key the synthesis step already needs. See `saal/retrieve/expand.py`.
 Whichever you pick, rerun `make index`, and watch compound recall on the scorecard.
 """
 from __future__ import annotations
@@ -23,6 +24,7 @@ import math
 import os
 import re
 import sys
+import urllib.error
 import urllib.request
 from typing import Protocol
 
@@ -113,6 +115,46 @@ class VoyageEmbedder:
         return out
 
 
+class OpenAIEmbedder:
+    """text-embedding-3-small, shortened to keep cosine fast.
+
+    Cosine runs in pure Python here, so every dimension is latency: 1536 wide over
+    a few thousand chunks is a second of arithmetic per query. The 3 series
+    supports native shortening, which keeps most of the quality at a third of the
+    width. Raise SAAL_OPENAI_EMBED_DIMS if recall matters more than milliseconds.
+    """
+
+    name = "openai"
+
+    def __init__(self, model: str | None = None, dims: int | None = None) -> None:
+        self.model = model or config.OPENAI_EMBED_MODEL
+        self.dims = dims or config.OPENAI_EMBED_DIMS
+        self.key = os.environ.get("OPENAI_API_KEY")
+        if not self.key:
+            raise RuntimeError("OPENAI_API_KEY is not set")
+
+    def embed(self, texts: list[str]) -> list[list[float]]:
+        out: list[list[float]] = []
+        for i in range(0, len(texts), 128):
+            batch = [t[:8000] for t in texts[i:i + 128]]
+            body = {"input": batch, "model": self.model, "dimensions": self.dims}
+            req = urllib.request.Request(
+                f"{config.OPENAI_BASE.rstrip('/')}/v1/embeddings",
+                data=json.dumps(body).encode(),
+                headers={"Authorization": f"Bearer {self.key}",
+                         "Content-Type": "application/json"})
+            try:
+                with urllib.request.urlopen(req, timeout=120) as resp:
+                    payload = json.load(resp)
+            except urllib.error.HTTPError as exc:
+                raise RuntimeError(
+                    f"openai embeddings {exc.code}: "
+                    f"{exc.read().decode('utf-8', 'replace')[:300]}") from exc
+            out.extend(item["embedding"] for item in
+                       sorted(payload["data"], key=lambda d: d["index"]))
+        return out
+
+
 class GeminiEmbedder:
     """Free tier embeddings. A Google AI Studio key needs no card.
 
@@ -172,6 +214,8 @@ def get_embedder(name: str | None = None) -> Embedder:
         return HashingEmbedder()
     if name == "voyage":
         return VoyageEmbedder()
+    if name == "openai":
+        return OpenAIEmbedder()
     if name == "gemini":
         return GeminiEmbedder()
     if name == "local":

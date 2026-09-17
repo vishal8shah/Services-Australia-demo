@@ -132,3 +132,36 @@ in the retrieved set: the stub generator caps itself at two payments and dropped
 them. Retrieval recall 1.00 against payment recall 0.82 says the retriever is not the
 problem. Without the split, that reads as a retrieval failure and sends the next day
 of work in exactly the wrong direction.
+
+## D10. One key, three roles, one transport
+
+**Chosen.** OpenAI and Anthropic are both supported for all three model roles:
+synthesis, query expansion, and the eval judge. Which one runs is three environment
+variables, and every model name is overridable because model names get retired.
+
+```bash
+export OPENAI_API_KEY=sk-...
+export SAAL_LLM_PROVIDER=openai SAAL_EXPANDER=openai SAAL_EMBED_PROVIDER=openai
+```
+
+**Why one transport.** Both APIs are a single POST with a JSON body. They differ in
+the endpoint, the auth header, and whether JSON mode is a request parameter or a
+prompt instruction. That is a twenty line difference, so it lives in `saal/llm.py`
+and the synthesiser, the expander and the judge share it. Before this there were
+three near copies of the same urllib call, which is three places for a timeout or a
+retry to be handled differently by accident. No SDK either: a dependency that has to
+be installed before the demo runs is a dependency that can fail before the demo runs.
+
+**Embedding width is a latency decision.** Cosine runs in pure Python, so
+`text-embedding-3-small` is requested at 512 dimensions rather than its full 1536.
+The 3 series supports native shortening and keeps most of its quality at a third of
+the width. If recall matters more than milliseconds, raise
+`SAAL_OPENAI_EMBED_DIMS` and rerun `make index`.
+
+**Failures are surfaced, not swallowed.** A missing key fails when the provider is
+constructed, not on the first question, because "no answer found" is the wrong face
+for a configuration error. A wrong model name or an exhausted balance comes back
+with the provider's own message attached. `make doctor` makes one cheap call per
+configured role so all of this is found before a crawl, not during a demo. The
+transport is unit tested against a fake urlopen, so the request shape, the JSON
+parsing and both failure modes are covered without a key, a network or a balance.

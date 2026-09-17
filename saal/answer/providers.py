@@ -1,6 +1,7 @@
 """Answer providers behind one method, so the harness never needs a network.
 
-- anthropic : the real thing
+- anthropic : Claude, via ANTHROPIC_API_KEY
+- openai    : GPT, via OPENAI_API_KEY
 - stub      : deterministic composition from the retrieved chunks, no model at
               all. It exists so the contract, the validator and the scorer can be
               exercised offline. It is not a model and its scores are a floor,
@@ -13,15 +14,14 @@ from __future__ import annotations
 import json
 import os
 import re
-import urllib.request
 from pathlib import Path
 from typing import Protocol
 
 from .. import config
+from ..llm import LLMError, api_key, chat, parse_json
 from ..retrieve.search import Hit
 from .synthesize import SYSTEM, build_user_message
 
-FENCE = re.compile(r"^```(?:json)?\s*|\s*```$", re.M)
 SENTENCE = re.compile(r"(?<=[.!?])\s+")
 
 
@@ -36,42 +36,33 @@ class Provider(Protocol):
                language: str) -> dict: ...
 
 
-def _parse_json(text: str) -> dict:
-    cleaned = FENCE.sub("", text.strip())
-    start, end = cleaned.find("{"), cleaned.rfind("}")
-    if start == -1 or end == -1:
-        raise ProviderError(f"no JSON object in model output: {text[:200]!r}")
-    return json.loads(cleaned[start:end + 1])
+class ApiProvider:
+    """Synthesis through a hosted model. One class, two providers.
 
+    The only difference between them is the transport, which lives in saal/llm.py,
+    so there is no second copy of the prompt, the parsing or the error handling to
+    drift out of step.
+    """
 
-class AnthropicProvider:
-    name = "anthropic"
-
-    def __init__(self, model: str | None = None) -> None:
-        self.model = model or config.LLM_MODEL
-        self.key = os.environ.get("ANTHROPIC_API_KEY")
-        if not self.key:
-            raise ProviderError("ANTHROPIC_API_KEY is not set")
+    def __init__(self, provider: str, model: str | None = None) -> None:
+        self.provider = provider
+        self.name = provider
+        self.model = model or config.model_for(provider)
+        # Fail here, not on the first question. A missing key surfacing as "no
+        # answer found" is a configuration error wearing a refusal's clothes.
+        api_key(provider)
 
     def answer(self, question, facets, hits, language="en") -> dict:
-        body = {
-            "model": self.model,
-            "max_tokens": 2000,
-            "temperature": 0,
-            "system": SYSTEM,
-            "messages": [{"role": "user",
-                          "content": build_user_message(question, facets, hits, language)}],
-        }
-        req = urllib.request.Request(
-            f"{config.ANTHROPIC_BASE.rstrip('/')}/v1/messages",
-            data=json.dumps(body).encode(),
-            headers={"x-api-key": self.key, "anthropic-version": "2023-06-01",
-                     "content-type": "application/json"},
-        )
-        with urllib.request.urlopen(req, timeout=120) as resp:
-            payload = json.load(resp)
-        text = "".join(b.get("text", "") for b in payload.get("content", []))
-        return _parse_json(text)
+        user = build_user_message(question, facets, hits, language)
+        try:
+            text = chat(SYSTEM, user, provider=self.provider, model=self.model,
+                        max_tokens=2000, json_mode=True)
+            parsed = parse_json(text)
+        except LLMError as exc:
+            raise ProviderError(str(exc)) from exc
+        if not isinstance(parsed, dict):
+            raise ProviderError(f"expected a JSON object, got {type(parsed).__name__}")
+        return parsed
 
 
 class StubProvider:
@@ -200,14 +191,14 @@ class RecordingProvider:
 def get_provider(name: str | None = None) -> Provider:
     name = name or config.LLM_PROVIDER
     base: Provider
-    if name == "anthropic":
-        base = AnthropicProvider()
+    if name in ("anthropic", "openai"):
+        base = ApiProvider(name)
     elif name == "stub":
         base = StubProvider()
     elif name == "fixture":
         base = FixtureProvider()
     else:
         raise ValueError(f"unknown provider: {name}")
-    if os.environ.get("SAAL_RECORD") == "1" and name == "anthropic":
+    if os.environ.get("SAAL_RECORD") == "1" and name in ("anthropic", "openai"):
         return RecordingProvider(base)
     return base

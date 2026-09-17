@@ -38,32 +38,49 @@ make index                      # chunk and embed
 make eval-real                  # the suite against the crawled corpus
 ```
 
-Optional upgrades, all read from the environment:
+## Add your key
+
+One key covers all three roles. Copy `.env.example`, fill in the key, check it:
 
 ```bash
-export SAAL_LLM_PROVIDER=anthropic ANTHROPIC_API_KEY=...  # real synthesis
-export SAAL_EXPANDER=claude                               # recommended: rewrites the
-                                                          # question into page vocabulary,
-                                                          # same key, one small call
-export SAAL_RECORD=1                                      # record responses for replay
-export SAAL_DEMO_MODE=static                              # no live model calls at all
+cp .env.example .env
+# edit .env, then
+set -a && . ./.env && set +a
+make doctor
 ```
 
-Semantic embeddings are optional and there are three ways to get them, none of them
-required:
+`make doctor` makes one cheap call per configured role and tells you which are
+live. Run it before the crawl, not after.
 
 ```bash
-export SAAL_EMBED_PROVIDER=gemini GEMINI_API_KEY=...   # free tier, no card
-export SAAL_EMBED_PROVIDER=local                       # pip install sentence-transformers
-export SAAL_EMBED_PROVIDER=voyage VOYAGE_API_KEY=...   # paid
-make index                                             # changing the embedder rebuilds every vector
+export OPENAI_API_KEY=sk-...
+export SAAL_LLM_PROVIDER=openai    # writes the answer
+export SAAL_EXPANDER=openai        # rewrites the question into page vocabulary
+export SAAL_EMBED_PROVIDER=openai  # makes retrieval semantic, rerun `make index` after
 ```
 
-To see what expansion buys before paying for anything:
+Anthropic works the same way with `ANTHROPIC_API_KEY` and `anthropic` in place of
+`openai`. Model names are all overridable, because they get retired:
+`SAAL_MODEL`, `SAAL_FAST_MODEL`, `SAAL_OPENAI_EMBED_MODEL`. Check what your key can
+see with `curl https://api.openai.com/v1/models -H "Authorization: Bearer $OPENAI_API_KEY"`.
+
+Embeddings are optional. The alternatives, if you would rather not spend on them:
+`gemini` on the free tier needs no card, `local` needs `pip install
+sentence-transformers` and no key, `voyage` is paid, and `hashing` is the default
+that needs nothing and bridges spelling but never meaning.
+
+Two switches worth knowing:
 
 ```bash
-python3 -m evals.run                     # retrieval recall 0.82, payment recall 0.54
-python3 -m evals.run --expander oracle   # retrieval recall 1.00, payment recall 0.82
+export SAAL_RECORD=1          # record live answers into evals/fixtures/llm.json
+export SAAL_DEMO_MODE=static  # replay them, no live model calls at all
+```
+
+To see what expansion buys before spending anything:
+
+```bash
+make eval           # retrieval recall 0.82, payment recall 0.54
+make eval-oracle    # retrieval recall 1.00, payment recall 0.82
 ```
 
 The oracle is hand written from the fixture vocabulary, so it is the ceiling rather
