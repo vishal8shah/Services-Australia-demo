@@ -79,8 +79,11 @@ export SAAL_EXPANDER=openai        # rewrites the question into page vocabulary
 export SAAL_EMBED_PROVIDER=openai  # makes retrieval semantic, rerun `make index` after
 ```
 
-Anthropic works the same way with `ANTHROPIC_API_KEY` and `anthropic` in place of
-`openai`. Model names are all overridable, because they get retired:
+A Claude key works the same way: `ANTHROPIC_API_KEY`, and `anthropic` in place of
+`openai` for synthesis and expansion. Anthropic has no embeddings endpoint, which
+does not matter here: expansion is what bridges a person's wording to the vocabulary
+of the pages, and it closed more of the gap than embeddings were asked to. Leave
+`SAAL_EMBED_PROVIDER` on the offline default. Model names are all overridable, because they get retired:
 `SAAL_MODEL`, `SAAL_FAST_MODEL`, `SAAL_OPENAI_EMBED_MODEL`. Check what your key can
 see with `curl https://api.openai.com/v1/models -H "Authorization: Bearer $OPENAI_API_KEY"`.
 

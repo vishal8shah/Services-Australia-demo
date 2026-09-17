@@ -184,3 +184,26 @@ loader uses `setdefault`, and there is a test for exactly that.
 
 **No python-dotenv.** It is twenty lines, and it would be the only thing standing
 between a fresh clone and a working `make test`.
+
+## D12. A Claude key alone is enough, and embeddings are the optional part
+
+**Context.** Anthropic publishes no embeddings endpoint, which reads like a gap when
+the retrieval design calls for vectors.
+
+**It is not one.** The thing that fails on this corpus is not vector search, it is
+vocabulary: the pages say "constant care" and "looking for work", people say "Mum is
+moving in with us" and "I got let go". Query expansion attacks that directly, and
+the oracle ablation in D7 measured it closing the retrieval recall gap completely,
+0.82 to 1.00, with the offline embedder left in place the whole time. An embedding
+provider is a second, weaker route to the same bridge.
+
+So with a Claude key: `SAAL_LLM_PROVIDER=anthropic` and `SAAL_EXPANDER=anthropic`,
+and `SAAL_EMBED_PROVIDER` stays on `hashing`. With both keys, Claude writes the
+answers and OpenAI can do the embeddings, which is belt and braces rather than a
+requirement.
+
+**`make doctor` checks the combination, not just the roles.** Offline embeddings and
+no expansion is a working configuration by every per role check, and answers nothing
+a person actually asks. That pairing now prints a warning naming the consequence,
+because a setup that looks green and refuses every real question is the worst of the
+available failure modes.

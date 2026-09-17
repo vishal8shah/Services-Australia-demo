@@ -16,7 +16,7 @@ from . import config, store
 from .ingest.embed import get_embedder
 from .llm import LLMError, chat
 
-OK, BAD, SKIP = "  ok  ", " FAIL ", " skip "
+OK, BAD, SKIP, WARN = "  ok  ", " FAIL ", " skip ", " warn "
 
 
 def line(status: str, role: str, detail: str) -> None:
@@ -100,6 +100,32 @@ def check_expansion() -> bool:
     return True
 
 
+def check_retrieval_capability(expansion_working: bool) -> bool:
+    """The roles only matter in combination.
+
+    Situation questions ("Mum is 82 and moving in with us") share no words with the
+    pages that answer them. Something has to bridge that: either a semantic
+    embedder, or query expansion rewriting the question into page vocabulary.
+    Neither role looks broken on its own when both are absent, which is exactly why
+    this check exists. It warns rather than fails, because the offline pair is a
+    perfectly good development setup.
+    """
+    semantic = config.EMBED_PROVIDER != "hashing"
+    expanding = config.EXPANDER not in ("none", "") and expansion_working
+    if semantic and expanding:
+        line(OK, "situation questions", "semantic embeddings and query expansion, both")
+    elif expanding:
+        line(OK, "situation questions",
+             f"carried by {config.EXPANDER} expansion, no embedding provider needed")
+    elif semantic:
+        line(OK, "situation questions", f"carried by {config.EMBED_PROVIDER} embeddings")
+    else:
+        line(WARN, "situation questions",
+             "nothing bridges wording to page vocabulary, these will refuse. "
+             "Set SAAL_EXPANDER to anthropic or openai")
+    return True
+
+
 def check_corpus() -> bool:
     if not config.DB_PATH.exists():
         line(SKIP, "corpus", f"no database at {config.DB_PATH}, run make crawl then make index")
@@ -125,8 +151,9 @@ def main() -> int:
     environment_ok = check_environment()
     check_keys()
     print("roles")
-    results = [environment_ok, check_embeddings(), check_synthesis(),
-               check_expansion(), check_corpus()]
+    expansion_ok = check_expansion()
+    results = [environment_ok, check_embeddings(), check_synthesis(), expansion_ok,
+               check_retrieval_capability(expansion_ok), check_corpus()]
     print()
     if all(results):
         print("all configured roles are working")
