@@ -67,7 +67,10 @@ product.
 2. `make measure`, then write the four TBD values into the Day 0 appendix of
    `PROTOTYPE_PLAN.md`. The real page count decides full corpus or three branches.
 3. `make crawl && make index`.
-4. Day 1 proper: trace each expected answer in `evals/golden_questions.md` to a real
-   chunk id and correct the ones the corpus does not support. The answer key comes
-   from the corpus, never from the model and never from memory.
+4. Day 1 proper: `make trace` looks up each expected answer in the crawled corpus
+   and reports which ones it can anchor to a real chunk id. `python3 -m evals.trace
+   --write` fills in the unambiguous ones. Everything it flags needs your
+   judgement: either the expected family is wrong, the corpus scope is too narrow,
+   or retrieval is failing, and which of the three it is matters. The answer key
+   comes from the corpus, never from the model and never from memory.
 5. `make eval-real`, and commit the first scorecard that means something.

@@ -1,6 +1,6 @@
 PROVIDER ?= openai
 
-.PHONY: help test eval eval-oracle eval-real doctor hooks measure serve crawl index clean
+.PHONY: help test eval eval-oracle eval-real doctor hooks measure trace serve crawl index clean
 
 help:
 	@echo "make doctor      check which keys and providers actually work"
@@ -12,6 +12,7 @@ help:
 	@echo "make measure     Day 0: is crawling permitted, and how many pages are there"
 	@echo "make crawl       fetch the corpus (needs network)"
 	@echo "make index       rebuild chunks and vectors from the fetched pages"
+	@echo "make trace       Day 1: trace each expected answer to a real chunk id"
 	@echo "make serve       the API and the page on http://127.0.0.1:8000"
 
 doctor:
@@ -42,6 +43,9 @@ crawl:
 
 index:
 	python3 -m saal.ingest.chunk && python3 -m saal.ingest.embed
+
+trace:
+	python3 -m evals.trace
 
 serve:
 	python3 -m saal.api.main
