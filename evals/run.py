@@ -172,9 +172,11 @@ def check_gates(metrics: dict, gates: dict) -> list[dict]:
 # ----------------------------------------------------------------- judging ---
 
 JUDGE_SYSTEM = (
-    "You check one claim against one source chunk. Answer with a single word, yes or no. "
-    "yes means the chunk states or directly supports the claim. no means it does not, "
-    "including when the claim is merely plausible or is about a different payment."
+    "You check one claim against the source chunks it cites, read together. Answer with "
+    "a single word, yes or no. yes means the chunks, taken together, state or directly "
+    "support the claim. no means they do not, including when the claim is merely "
+    "plausible or is about a different payment. A claim that tells the person to open, "
+    "read or check a page the chunks come from is supported when that page is cited."
 )
 
 
@@ -196,20 +198,23 @@ def judge_faithfulness(conn, rows_responses: list[tuple[dict, dict]],
         claims = list(iter_claims(response))
         wanted = sorted({cid for _, ids in claims for cid in ids})
         chunks = store.get_chunks(conn, wanted)
+        # One verdict per claim, against every chunk it cites read together. A
+        # claim that two chunks support jointly is sourced; judging each chunk
+        # alone failed it once per chunk (D19, D20).
         for claim, ids in claims:
-            for cid in ids:
-                chunk = chunks.get(cid)
-                if not chunk or not claim.strip():
-                    continue
-                checked += 1
-                verdict = chat(JUDGE_SYSTEM,
-                               f"CHUNK\n{chunk.heading_path}\n{chunk.text}\n\nCLAIM\n{claim}",
-                               provider=provider, model=model, max_tokens=5,
-                               json_mode=False, timeout=60)
-                if verdict.strip().lower().startswith("yes"):
-                    supported += 1
-                else:
-                    failures.append(f"{item['id']}: {claim[:80]} [{cid}]")
+            cited = [chunks[cid] for cid in ids if cid in chunks]
+            if not cited or not claim.strip():
+                continue
+            checked += 1
+            blob = "\n\n".join(f"CHUNK {c.chunk_id}\n{c.title} > {c.heading_path}\n{c.text}"
+                               for c in cited)
+            verdict = chat(JUDGE_SYSTEM, f"{blob}\n\nCLAIM\n{claim}",
+                           provider=provider, model=model, max_tokens=5,
+                           json_mode=False, timeout=60)
+            if verdict.strip().lower().startswith("yes"):
+                supported += 1
+            else:
+                failures.append(f"{item['id']}: {claim[:80]} [{', '.join(ids)}]")
     return {"rate": round(supported / checked, 4) if checked else None,
             "checked": checked, "failures": failures}
 
@@ -286,9 +291,10 @@ def write_scorecard(meta: dict, metrics: dict, gate_rows: list[dict],
         lines += [f"- {f}" for f in faithfulness["failures"][:25]]
 
     lines += ["", "## Notes", "", meta.get("note", "")]
-    path.write_text("\n".join(lines) + "\n")
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
     path.with_suffix(".json").write_text(json.dumps(
-        {"meta": meta, "metrics": metrics, "gates": gate_rows, "items": rows}, indent=2))
+        {"meta": meta, "metrics": metrics, "gates": gate_rows, "items": rows}, indent=2),
+        encoding="utf-8")
     return path
 
 
@@ -306,7 +312,7 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--strict", action="store_true", help="exit non zero when a gate fails")
     args = ap.parse_args(argv)
 
-    doc = json.loads(GOLDEN.read_text())
+    doc = json.loads(GOLDEN.read_text(encoding="utf-8"))
     items = doc["items"]
     if args.only:
         wanted = {i.strip().upper() for i in args.only.split(",")}
@@ -325,7 +331,7 @@ def main(argv: list[str] | None = None) -> int:
         note = "Crawled corpus."
 
     provider = get_provider(args.provider) if args.provider else get_provider()
-    oracle = json.loads(EXPANSIONS.read_text())["phrases"] if args.expander == "oracle" else {}
+    oracle = json.loads(EXPANSIONS.read_text(encoding="utf-8"))["phrases"] if args.expander == "oracle" else {}
     if args.expander == "oracle":
         note = "ORACLE EXPANSION, an upper bound. " + note
     elif args.expander != "none":

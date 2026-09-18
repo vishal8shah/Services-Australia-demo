@@ -1,0 +1,768 @@
+<title>Payment Finder Deck</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Schibsted+Grotesk:wght@500;600;700;800&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;1,8..60,400&display=swap">
+<style>
+/* One committed look, painted explicitly: paper content slides, deep ink statement slides. */
+:root{
+  --ink:#0D1920; --ink-2:#152630; --ink-3:#1E3441;
+  --paper:#F5F6F2; --card:#FFFFFF; --rule:#E0E4DD; --rule-dark:#2A4250;
+  --text:#101C23; --muted:#5B6870; --muted-dark:#93A6B0; --on-dark:#EEF2EC;
+  --euc:#1C7A60; --euc-soft:#E2F0E9; --mint:#7ED6B2;
+  --ochre:#C98F2B; --brick:#B2472D; --brick-soft:#F7E6DF; --brick-light:#F08E70;
+  --display:"Schibsted Grotesk",ui-sans-serif,system-ui,"Segoe UI",Arial,sans-serif;
+  --serif:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --mono:"IBM Plex Mono",ui-monospace,Consolas,Menlo,monospace;
+  --ease:cubic-bezier(.2,.7,.2,1);
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:#081116;color:var(--text);font-family:var(--serif);overflow:hidden;
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+
+/* ---------- stage: a fixed 1600x900 canvas scaled to fit ---------- */
+.viewport{position:fixed;inset:0;bottom:calc(56px + env(safe-area-inset-bottom,0px));display:grid;place-items:center}
+.frame{position:relative;width:calc(1600px * var(--s,.5));height:calc(900px * var(--s,.5))}
+.slide{position:absolute;left:0;top:0;width:1600px;height:900px;transform:scale(var(--s,.5));transform-origin:0 0;
+  background:var(--paper);color:var(--text);padding:84px 104px 72px;display:flex;flex-direction:column;overflow:hidden;
+  border-radius:4px;box-shadow:0 30px 80px rgba(0,0,0,.45)}
+.slide.dark{background:var(--ink);color:var(--on-dark)}
+.slide.dark::before{content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(900px 600px at 88% 8%,rgba(126,214,178,.13),transparent 60%),
+             radial-gradient(700px 500px at 0% 100%,rgba(201,143,43,.08),transparent 60%)}
+.slide > *{position:relative}
+
+/* ---------- type ---------- */
+h1,h2,h3{font-family:var(--display);margin:0;letter-spacing:-.02em;text-wrap:balance}
+h1{font-size:136px;line-height:.92;font-weight:800;letter-spacing:-.045em}
+h2{font-size:60px;line-height:1.02;font-weight:700;letter-spacing:-.03em;max-width:1180px}
+h3{font-size:28px;line-height:1.15;font-weight:600}
+p{margin:0}
+.eyebrow{font-family:var(--mono);font-size:15px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);
+  display:flex;align-items:center;gap:14px;margin-bottom:28px}
+.eyebrow::before{content:"";width:28px;height:2px;background:var(--euc)}
+.dark .eyebrow{color:var(--muted-dark)}
+.dark .eyebrow::before{background:var(--mint)}
+.eyebrow .num{margin-left:auto;color:inherit;opacity:.7}
+.lede{font-size:26px;line-height:1.45;color:var(--muted);max-width:760px;margin-top:22px}
+.dark .lede{color:var(--muted-dark)}
+.mono{font-family:var(--mono)}
+.foot{margin-top:auto;display:flex;justify-content:space-between;gap:24px;font-family:var(--mono);font-size:14px;color:var(--muted);letter-spacing:.02em}
+.dark .foot{color:var(--muted-dark)}
+.hl{color:var(--euc)} .dark .hl{color:var(--mint)}
+.no{color:var(--brick)} .dark .no{color:var(--brick-light)}
+
+/* citation chip, the deck's motif */
+.cite{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:13px;line-height:1;white-space:nowrap;
+  padding:5px 8px;border-radius:4px;background:var(--euc-soft);color:var(--euc);vertical-align:3px;margin-left:8px}
+.cite::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+
+/* ---------- reveal choreography: runs each time a slide is shown ---------- */
+.rv{animation:rv .7s var(--ease) both;animation-delay:var(--d,0s)}
+@keyframes rv{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+.pop{animation:pop .45s var(--ease) both;animation-delay:var(--d,0s)}
+@keyframes pop{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:none}}
+
+/* ---------- 1 cover ---------- */
+.cover{display:grid;grid-template-columns:1fr 620px;gap:72px;flex:1;align-items:center}
+.cover h1 .dot{color:var(--mint)}
+.cover .lede{font-size:30px;color:#C9D4CF;max-width:640px}
+.cover .meta{display:flex;gap:14px;margin-top:44px;flex-wrap:wrap}
+.tag{font-family:var(--mono);font-size:14px;letter-spacing:.08em;text-transform:uppercase;padding:9px 14px;border-radius:4px;border:1px solid var(--rule-dark);color:var(--muted-dark)}
+.tag.warn{border-color:rgba(240,142,112,.5);color:var(--brick-light)}
+
+.card{background:var(--card);color:var(--text);border-radius:10px;box-shadow:0 1px 0 rgba(255,255,255,.04),0 40px 90px rgba(0,0,0,.45);overflow:hidden}
+.card .ask{display:flex;align-items:center;gap:14px;padding:22px 26px;border-bottom:1px solid var(--rule);font-family:var(--display);font-size:21px;font-weight:600;min-height:92px}
+.card .ask::before{content:"";flex:none;width:12px;height:12px;border-radius:50%;background:var(--euc);box-shadow:0 0 0 6px var(--euc-soft)}
+.caret{display:inline-block;width:2px;height:22px;background:var(--euc);margin-left:3px;vertical-align:-3px;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.card .body{padding:20px 26px 8px;display:flex;flex-direction:column;gap:16px}
+.facets{display:flex;gap:8px;flex-wrap:wrap}
+.facet{font-family:var(--mono);font-size:13px;color:var(--muted);border:1px dashed #C8CEC6;border-radius:4px;padding:6px 9px}
+.pay{border-left:3px solid var(--euc);padding:2px 0 2px 16px;display:flex;flex-direction:column;gap:6px}
+.pay strong{font-family:var(--display);font-size:22px;font-weight:700;letter-spacing:-.01em}
+.pay span{font-size:17px;line-height:1.4;color:#34424A}
+.pay .diff{color:var(--muted);font-style:italic}
+.sources{margin-top:6px;border-top:1px solid var(--rule);padding:14px 26px 18px;display:grid;gap:7px;font-family:var(--mono);font-size:13px;color:var(--muted)}
+.sources div{display:grid;grid-template-columns:78px 1fr auto;gap:10px;align-items:center}
+.sources b{font-weight:500;color:var(--euc)}
+.date{color:var(--ochre)}
+.sources .na{grid-template-columns:78px 1fr}
+.sources .na b{color:var(--brick)}
+
+/* ---------- 2 problem ---------- */
+.problem{display:grid;grid-template-columns:560px 1fr;gap:88px;flex:1;align-items:center;margin-top:36px}
+.big{font-family:var(--display);font-weight:800;font-size:184px;line-height:.85;letter-spacing:-.06em;font-variant-numeric:tabular-nums}
+.big small{font-size:72px;letter-spacing:-.03em}
+.big-l{font-size:24px;color:var(--muted);margin-top:22px;line-height:1.4;max-width:420px}
+.waffles{display:grid;grid-template-columns:1fr 1fr;gap:56px}
+.waffle{display:grid;grid-template-columns:repeat(10,22px);gap:9px;margin-bottom:26px}
+.waffle i{width:22px;height:22px;border-radius:50%;background:#DDE2DA;animation:pop .35s var(--ease) both;animation-delay:calc(var(--i) * 14ms + .3s)}
+.waffle i.on{background:var(--brick)}
+.w-n{font-family:var(--display);font-weight:800;font-size:64px;letter-spacing:-.04em;line-height:1}
+.w-l{font-size:20px;color:var(--muted);margin-top:8px;line-height:1.35;max-width:300px}
+
+.waits{display:grid;gap:12px;margin-top:26px}
+.wait{display:grid;grid-template-columns:170px auto 1fr;gap:14px;align-items:center;font:14px var(--mono);color:var(--muted)}
+.wait i{display:block;height:26px;border-radius:3px;background:#CDD3CA;transform-origin:left;animation:grow .9s var(--ease) both;animation-delay:var(--d)}
+.wait.now i{background:var(--brick)}
+.wait b{font:600 16px var(--mono);color:var(--text)}
+@keyframes grow{from{transform:scaleX(0)}to{transform:none}}
+
+/* ---------- 3 two vocabularies ---------- */
+.bridge{display:grid;grid-template-columns:470px 1fr 400px;flex:1;margin-top:40px;align-items:start}
+.col-h{font-family:var(--mono);font-size:14px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);height:40px}
+.stack{position:relative;height:372px}
+.phrase,.term{position:absolute;left:0;right:0;display:flex;align-items:center}
+.phrase{height:92px;padding:0 26px;background:var(--card);border:1px solid var(--rule);border-radius:8px;font-family:var(--serif);font-size:25px;line-height:1.25;font-style:italic;color:#2A363D}
+.term{height:72px;padding:0 22px;background:var(--euc-soft);border-radius:8px;font-family:var(--mono);font-size:22px;color:var(--euc);justify-content:space-between}
+.term small{font-size:13px;color:#5E8C7B;letter-spacing:.06em;text-transform:uppercase}
+.lines{position:relative;height:372px}
+.lines svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.lines path{fill:none;stroke:var(--euc);stroke-width:2.5;stroke-dasharray:420;stroke-dashoffset:420;animation:draw 1.1s var(--ease) forwards;animation-delay:var(--d)}
+.lines circle{fill:var(--euc)}
+@keyframes draw{to{stroke-dashoffset:0}}
+.lines .label{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:var(--ink);color:var(--mint);font-family:var(--mono);font-size:14px;letter-spacing:.08em;text-transform:uppercase;padding:9px 14px;border-radius:99px;white-space:nowrap}
+.bridge-note{display:grid;grid-template-columns:470px 1fr 400px;margin-top:26px;font-size:21px;line-height:1.4;color:var(--muted)}
+.bridge-note p:last-child{grid-column:3}
+
+/* ---------- 4 what we built ---------- */
+.built{display:grid;grid-template-columns:1fr 700px;gap:72px;flex:1;margin-top:30px;align-items:start}
+.anatomy{display:grid;gap:0}
+.anatomy div{display:grid;grid-template-columns:150px 1fr;gap:20px;padding:17px 0;border-top:1px solid var(--rule)}
+.anatomy div:last-child{border-bottom:1px solid var(--rule)}
+.anatomy b{font-family:var(--mono);font-weight:500;font-size:15px;color:var(--euc);padding-top:5px;letter-spacing:.02em}
+.anatomy span{font-size:22px;line-height:1.4;color:#2F3B42}
+.built .card{box-shadow:0 30px 70px rgba(13,25,32,.14),0 0 0 1px var(--rule)}
+.built .ask{font-size:21px;min-height:0;padding:18px 24px}
+.built .body{gap:13px;padding-top:16px}
+.built .sources{padding-block:12px 14px}
+.sample{font-family:var(--mono);font-size:13px;color:var(--muted);text-align:right;margin-top:10px}
+
+/* ---------- 5 refusals ---------- */
+.refusals{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:52px}
+.ref{background:var(--ink-2);border:1px solid var(--rule-dark);border-radius:10px;padding:28px 28px 24px;display:flex;flex-direction:column;gap:12px;min-height:214px}
+.ref .x{font-family:var(--mono);font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--brick-light);display:flex;align-items:center;gap:10px}
+.ref .x::before{content:"";width:9px;height:9px;border-radius:2px;background:var(--brick-light)}
+.ref h3{color:#F3F5F1;font-size:27px}
+.ref p{font-size:19px;line-height:1.42;color:var(--muted-dark)}
+.ref .to{margin-top:auto;font-family:var(--mono);font-size:15px;color:var(--mint)}
+
+/* ---------- 6 pipeline ---------- */
+.pipe{position:relative;margin-top:56px;display:grid;grid-template-columns:repeat(6,1fr);gap:18px}
+.track{position:absolute;left:0;right:0;top:34px;height:2px;background:var(--rule)}
+.track::after{content:"";position:absolute;top:-5px;left:0;width:12px;height:12px;border-radius:50%;background:var(--euc);box-shadow:0 0 0 7px rgba(28,122,96,.18),0 0 24px rgba(28,122,96,.6);animation:travel 4.2s var(--ease) infinite .9s}
+@keyframes travel{0%{left:0;opacity:0}8%{opacity:1}92%{opacity:1}100%{left:calc(100% - 12px);opacity:0}}
+.node{position:relative;display:flex;flex-direction:column;gap:12px}
+.node .dot{width:70px;height:70px;border-radius:50%;background:var(--card);border:2px solid var(--rule);display:grid;place-items:center;font-family:var(--mono);font-size:17px;color:var(--muted);position:relative;z-index:1}
+.node.gate .dot{background:var(--ink);border-color:var(--ink);color:var(--mint)}
+.node .k{font-family:var(--mono);font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-top:10px}
+.node h3{font-size:25px}
+.node p{font-size:18px;line-height:1.42;color:var(--muted)}
+.exitrow{display:grid;grid-template-columns:repeat(6,1fr);gap:18px;margin-top:24px}
+.exit{font-family:var(--mono);font-size:14px;display:flex;align-items:center;gap:10px;height:44px}
+.exit.no{color:var(--brick)}
+.exit.no::before{content:"";width:2px;height:44px;background:repeating-linear-gradient(var(--brick) 0 5px,transparent 5px 9px);margin-left:34px}
+.exit.yes{color:var(--euc)}
+.exit.yes::before{content:"";width:2px;height:44px;background:var(--euc);margin-left:34px}
+.outcomes{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:22px}
+.outcome{border-radius:10px;padding:22px 26px;font-size:21px;line-height:1.4}
+.outcome b{font-family:var(--display);font-size:22px;display:block;margin-bottom:4px}
+.outcome.yes{background:var(--euc-soft);color:#1E3A31}
+.outcome.yes b{color:var(--euc)}
+.outcome.no{background:var(--brick-soft);color:#4A2A20}
+.outcome.no b{color:var(--brick)}
+
+/* ---------- 7 validator ---------- */
+.checks{display:grid;grid-template-columns:1fr 1fr;gap:0 72px;margin-top:48px}
+.check{display:grid;grid-template-columns:52px 1fr;gap:20px;padding:24px 0;border-top:1px solid var(--rule)}
+.tick{width:44px;height:44px;border-radius:50%;background:var(--euc);display:grid;place-items:center;animation:pop .45s var(--ease) both;animation-delay:var(--d)}
+.tick svg{width:22px;height:22px;stroke:#fff;stroke-width:3;fill:none;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:30;stroke-dashoffset:30;animation:draw .4s ease-out forwards;animation-delay:calc(var(--d) + .25s)}
+.check h3{font-size:27px}
+.check p{font-size:20px;line-height:1.42;color:var(--muted);margin-top:6px}
+.check .n{font-family:var(--mono);font-size:13px;color:var(--muted);letter-spacing:.1em}
+.pull{margin-top:auto;display:flex;align-items:center;gap:22px;background:var(--ink);color:var(--on-dark);border-radius:10px;padding:22px 30px;font-size:23px;line-height:1.35}
+.pull b{font-family:var(--mono);font-weight:500;font-size:15px;color:var(--mint);letter-spacing:.1em;text-transform:uppercase;white-space:nowrap}
+
+/* ---------- 8 evidence ---------- */
+.evidence{display:grid;grid-template-columns:1fr 400px;gap:80px;margin-top:30px;flex:1}
+.legend{display:flex;gap:30px;font-family:var(--mono);font-size:14px;color:var(--muted);margin-bottom:18px}
+.legend span{display:flex;align-items:center;gap:10px}
+.legend i{width:26px;height:12px;border-radius:2px;display:inline-block}
+.metric{display:grid;grid-template-columns:240px 1fr;gap:28px;align-items:center;padding:16px 0;border-top:1px solid var(--rule)}
+.metric .name{font-family:var(--display);font-size:24px;font-weight:600;line-height:1.2}
+.metric .name small{display:block;font-family:var(--mono);font-size:13px;font-weight:400;color:var(--muted);margin-top:6px}
+.bars{position:relative;display:grid;gap:9px;width:560px}
+.bar{height:26px;display:flex;align-items:center;gap:12px}
+.bar i{height:100%;border-radius:3px;transform-origin:left;animation:grow .9s var(--ease) both;animation-delay:var(--d)}
+@keyframes grow{from{transform:scaleX(0)}to{transform:none}}
+.bar.b i{background:#CDD3CA}
+.bar.a i{background:var(--euc)}
+.bar span{font-family:var(--mono);font-size:16px;font-variant-numeric:tabular-nums}
+.gateline{position:absolute;top:-10px;bottom:-10px;border-left:2px dashed var(--brick)}
+.gateline b{position:absolute;top:-24px;left:-22px;font-family:var(--mono);font-size:12px;font-weight:400;color:var(--brick);white-space:nowrap}
+.held{background:var(--ink);color:var(--on-dark);border-radius:12px;padding:30px 32px;display:flex;flex-direction:column;gap:6px;align-self:start}
+.held .h{font-family:var(--mono);font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted-dark);margin-bottom:10px}
+.stat{display:flex;align-items:baseline;justify-content:space-between;padding:12px 0;border-top:1px solid var(--rule-dark)}
+.stat b{font-family:var(--display);font-weight:800;font-size:54px;letter-spacing:-.04em;color:var(--mint);line-height:1}
+.stat span{font-size:19px;color:#C9D4CF;max-width:190px;text-align:right;line-height:1.3}
+.caveat{margin-top:14px;display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:start;font-size:19px;line-height:1.45;color:var(--muted);border-top:1px solid var(--rule);padding-top:20px}
+.caveat b{font-family:var(--mono);font-size:13px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--brick);background:var(--brick-soft);padding:6px 10px;border-radius:4px;white-space:nowrap}
+
+/* ---------- 9 engineering ---------- */
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-top:56px;border-top:1px solid var(--rule)}
+.tile{padding:30px 30px 30px 0;border-bottom:1px solid var(--rule);display:flex;flex-direction:column;gap:12px;min-height:250px}
+.tile + .tile{padding-left:30px;border-left:1px solid var(--rule)}
+.tile:nth-child(5){padding-left:0;border-left:none}
+.tile .v{font-family:var(--display);font-weight:800;font-size:76px;letter-spacing:-.05em;line-height:.9;color:var(--text)}
+.tile .v small{font-size:30px;letter-spacing:-.02em;color:var(--muted);font-weight:600}
+.tile h3{font-size:22px}
+.tile p{font-size:18px;line-height:1.42;color:var(--muted)}
+
+/* ---------- 10 value ---------- */
+.value{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:56px;flex:1}
+.aud{background:var(--card);border:1px solid var(--rule);border-radius:12px;padding:34px 32px;display:flex;flex-direction:column}
+.aud .who{font-family:var(--mono);font-size:14px;letter-spacing:.12em;text-transform:uppercase;color:var(--euc)}
+.aud h3{font-size:36px;letter-spacing:-.025em;margin:14px 0 22px;line-height:1.05}
+.aud ul{list-style:none;margin:0;padding:0;display:grid;gap:16px}
+.aud li{font-size:20px;line-height:1.42;color:#34424A;padding-left:26px;position:relative}
+.aud li::before{content:"";position:absolute;left:0;top:11px;width:12px;height:2px;background:var(--euc)}
+
+
+/* ---------- voice ---------- */
+.voice{display:grid;grid-template-columns:500px 1fr;gap:80px;margin-top:40px;flex:1;align-items:start}
+.micbig{position:relative;width:132px;height:132px;border-radius:50%;background:var(--brick);display:grid;place-items:center;margin:8px 0 34px 8px}
+.micbig svg{width:56px;height:56px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round}
+.micbig::before,.micbig::after{content:"";position:absolute;inset:0;border-radius:50%;border:3px solid var(--brick);animation:ring 2s var(--ease) infinite}
+.micbig::after{animation-delay:1s}
+@keyframes ring{from{transform:scale(1);opacity:.6}to{transform:scale(1.9);opacity:0}}
+.langs{display:flex;flex-wrap:wrap;gap:10px}
+.lg{font-size:21px;line-height:1;padding:10px 16px;border-radius:999px;background:var(--card);border:1px solid var(--rule);color:#2A363D}
+.lg.more{font-family:var(--mono);font-size:15px;color:var(--euc);background:var(--euc-soft);border-color:transparent;padding:13px 16px}
+.flow{display:grid;gap:14px}
+.fq{font-size:25px;line-height:1.4;font-style:italic;color:#2A363D;background:var(--card);border:1px solid var(--rule);border-radius:10px;padding:18px 22px}
+.fq small{display:block;font:500 13px var(--mono);font-style:normal;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.fx{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font:14px var(--mono);color:var(--muted)}
+.fx .term-s{background:var(--euc-soft);color:var(--euc);border-radius:6px;padding:6px 10px}
+.gl{display:grid;grid-template-columns:60px 1fr;gap:16px;align-items:baseline;padding:14px 0;border-top:1px solid var(--rule)}
+.gl b{font:500 14px var(--mono);color:var(--euc)}
+.gl span{font-size:22px;line-height:1.35}
+.gl strong{font-family:var(--display);font-weight:700}
+
+/* ---------- 11 scenarios ---------- */
+.scen{margin-top:48px;display:grid;gap:14px}
+.srow{display:grid;grid-template-columns:90px 1fr 250px 250px;align-items:center;gap:28px;background:var(--card);border:1px solid var(--rule);border-radius:10px;padding:24px 30px}
+.srow.head{background:none;border:none;padding:0 30px;font-family:var(--mono);font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.letter{font-family:var(--display);font-weight:800;font-size:54px;line-height:1;color:var(--euc);letter-spacing:-.04em}
+.srow q{font-size:25px;line-height:1.35;font-style:italic;color:#27333A;quotes:"\201C" "\201D"}
+.measure{display:flex;align-items:center;gap:12px;font-family:var(--mono);font-size:16px;color:var(--muted)}
+.measure i{font-style:normal;padding:7px 12px;border:1px dashed #C4CBC2;border-radius:4px}
+.measure em{font-style:normal;color:#AAB2A8}
+
+/* ---------- 12 close ---------- */
+.timeline{display:grid;grid-template-columns:repeat(3,1fr);gap:34px;margin-top:56px;position:relative}
+.timeline::before{content:"";position:absolute;left:0;right:0;top:15px;height:2px;background:linear-gradient(90deg,var(--mint) 0 34%,var(--rule-dark) 34% 100%)}
+.phase{position:relative;display:flex;flex-direction:column;gap:14px}
+.phase .pin{width:32px;height:32px;border-radius:50%;border:2px solid var(--rule-dark);background:var(--ink)}
+.phase.done .pin{background:var(--mint);border-color:var(--mint)}
+.phase.now .pin{border-color:var(--mint);box-shadow:0 0 0 0 rgba(126,214,178,.5);animation:pulse 2s infinite}
+@keyframes pulse{70%{box-shadow:0 0 0 16px rgba(126,214,178,0)}100%{box-shadow:0 0 0 0 rgba(126,214,178,0)}}
+.phase .lbl{font-family:var(--mono);font-size:14px;letter-spacing:.12em;text-transform:uppercase;color:var(--mint)}
+.phase.next .lbl{color:var(--muted-dark)}
+.phase ul{list-style:none;margin:0;padding:0;display:grid;gap:11px}
+.phase li{font-size:20px;line-height:1.38;color:#C9D4CF}
+.closer{margin-top:auto;display:flex;align-items:flex-end;justify-content:space-between;gap:40px;border-top:1px solid var(--rule-dark);padding-top:30px}
+.closer p{font-family:var(--display);font-size:44px;font-weight:700;letter-spacing:-.03em;line-height:1.05;max-width:900px}
+.closer small{font-family:var(--mono);font-size:13px;color:var(--muted-dark);text-align:right;line-height:1.6}
+
+/* ---------- controls ---------- */
+.controls{position:fixed;left:0;right:0;bottom:0;height:calc(56px + env(safe-area-inset-bottom,0px));padding:0 24px env(safe-area-inset-bottom,0px);
+  display:flex;align-items:center;gap:16px;font-family:var(--mono);font-size:12px;color:#8FA1AA;background:#081116}
+.controls button{font:inherit;color:#DCE4E0;background:#122029;border:1px solid #213642;border-radius:6px;height:32px;min-width:36px;padding:0 10px;cursor:pointer}
+.controls button:hover{border-color:#3A5A6A}
+.controls button:focus-visible,.rail button:focus-visible{outline:2px solid var(--mint);outline-offset:2px}
+.controls button:disabled{opacity:.35;cursor:default}
+.rail{flex:1;display:flex;gap:6px;align-items:center}
+.rail button{flex:1;height:14px;min-width:0;padding:0;border:none;background:none;position:relative}
+.rail button::after{content:"";position:absolute;left:0;right:0;top:6px;height:2px;border-radius:2px;background:#24394A;transition:background .2s}
+.rail button[aria-current="true"]::after,.rail button.past::after{background:var(--mint)}
+#count{min-width:64px;text-align:center;color:#DCE4E0;font-variant-numeric:tabular-nums}
+#section{min-width:170px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  .lines path{stroke-dashoffset:0}
+  .tick svg{stroke-dashoffset:0}
+  .caret{display:none}
+}
+
+/* ---------- phones: stacked, reflowed, no scaling ---------- */
+@media (max-width:760px){
+  body{overflow:auto;background:var(--paper);padding-inline:16px}
+  .viewport{position:static;display:block;padding-block:16px}
+  .frame{width:auto;height:auto;display:grid;gap:16px}
+  .slide{position:relative;width:auto;height:auto;transform:none;padding:28px 20px;border-radius:12px;box-shadow:none;border:1px solid var(--rule)}
+  .slide.dark{border-color:var(--ink)}
+  .slide[hidden]{display:flex!important}
+  .controls{display:none}
+  h1{font-size:56px} h2{font-size:30px} h3{font-size:20px}
+  .eyebrow{font-size:11px;margin-bottom:16px}
+  .lede,.cover .lede{font-size:18px}
+  .foot{font-size:11px;margin-top:24px;flex-wrap:wrap}
+  .cover,.problem,.built,.evidence,.checks,.value,.outcomes,.waffles,.timeline,.refusals,.tiles{grid-template-columns:1fr;gap:18px}
+  .cover .meta{margin-top:20px}
+  .card .ask{font-size:17px;min-height:0;padding:16px}
+  .card .body{padding:14px 16px 4px}
+  .sources{padding:12px 16px}
+  .sources div{grid-template-columns:64px 1fr;font-size:11px}
+  .sources .date{grid-column:2}
+  .pay strong{font-size:18px} .pay span{font-size:15px}
+  .big{font-size:88px} .big small{font-size:36px} .big-l{font-size:17px}
+  .waffle{grid-template-columns:repeat(10,1fr);gap:5px;max-width:240px}
+  .waffle i{width:100%;height:auto;aspect-ratio:1}
+  .w-n{font-size:40px} .w-l{font-size:15px}
+  .bridge,.bridge-note{grid-template-columns:1fr;margin-top:18px;gap:10px}
+  .bridge-note p:last-child{grid-column:auto}
+  .stack{height:auto;display:grid;gap:8px}
+  .phrase,.term{position:static;height:auto;padding:12px 14px;font-size:17px}
+  .lines{display:none}
+  .col-h{height:auto;margin-top:8px;font-size:11px}
+  .anatomy div{grid-template-columns:1fr;gap:4px;padding:12px 0}
+  .anatomy span{font-size:16px}
+  .ref{min-height:0;padding:18px} .ref h3{font-size:20px} .ref p{font-size:15px}
+  .pipe,.exitrow{grid-template-columns:1fr;margin-top:24px}
+  .track,.exitrow{display:none}
+  .node{flex-direction:row;align-items:flex-start;gap:14px}
+  .node .dot{flex:none;width:44px;height:44px;font-size:13px}
+  .node .k{margin-top:0} .node h3{font-size:18px} .node p{font-size:15px}
+  .outcome{font-size:16px;padding:16px}
+  .check{grid-template-columns:40px 1fr;padding:14px 0} .tick{width:32px;height:32px} .check h3{font-size:19px} .check p{font-size:15px}
+  .pull{margin-top:18px;flex-direction:column;align-items:flex-start;font-size:17px;padding:16px}
+  .metric{grid-template-columns:1fr;gap:10px}
+  .bars{width:100%}
+  .metric .name{font-size:18px}
+  .legend{flex-wrap:wrap;gap:12px;font-size:11px;margin-bottom:12px}
+  .stat b{font-size:36px} .stat span{font-size:15px}
+  .caveat{grid-template-columns:1fr;font-size:15px}
+  .tile,.tile + .tile{padding:18px 0;border-left:none;min-height:0}
+  .tile .v{font-size:48px}
+  .aud{padding:20px} .aud h3{font-size:24px;margin:8px 0 12px} .aud li{font-size:16px}
+  .srow,.srow.head{grid-template-columns:1fr;gap:10px;padding:16px}
+  .srow.head{display:none}
+  .letter{font-size:32px} .srow q{font-size:18px}
+  .measure{font-size:13px}
+  .timeline::before{display:none}
+  .phase li{font-size:16px}
+  .closer{flex-direction:column;align-items:flex-start;gap:14px}
+  .closer p{font-size:26px} .closer small{text-align:left}
+}
+</style>
+
+<div class="viewport">
+<main class="frame" id="frame">
+
+<!-- 1 · cover -->
+<section class="slide dark" data-section="Cover" aria-label="Payment Finder">
+  <div class="eyebrow">Unofficial prototype <span class="num">September 2026</span></div>
+  <div class="cover">
+    <div>
+      <h1 class="rv">Payment<br>Finder<span class="dot">.</span></h1>
+      <p class="lede rv" style="--d:.15s">One sentence in. The payments that apply out, with a source and that page's own date on every claim.</p>
+      <div class="meta rv" style="--d:.3s">
+        <span class="tag warn">Not affiliated with Services Australia</span>
+        <span class="tag">No personal data held</span>
+      </div>
+    </div>
+    <div class="card rv" style="--d:.35s" aria-label="Illustrative answer">
+      <div class="ask"><span id="typed">Mum is 82 and moving in with us, I have dropped to three days a week.</span><span class="caret" aria-hidden="true"></span></div>
+      <div class="body">
+        <div class="facets">
+          <span class="facet pop" style="--d:2.3s">caring for an ageing parent</span>
+          <span class="facet pop" style="--d:2.45s">reduced work hours</span>
+        </div>
+        <div class="pay rv" style="--d:2.7s">
+          <strong>Carer Payment</strong>
+          <span>Income support if you can't work full time because you give constant care.<span class="cite pop" style="--d:3.3s">c_412</span></span>
+        </div>
+        <div class="pay rv" style="--d:2.95s">
+          <strong>Carer Allowance</strong>
+          <span>Extra help for daily care, and you can get it while working.<span class="cite pop" style="--d:3.45s">c_418</span></span>
+        </div>
+      </div>
+      <div class="sources rv" style="--d:3.6s">
+        <div><b>c_412</b><span>Who can get Carer Payment</span><span class="date">2026-07-14</span></div>
+        <div><b>c_418</b><span>Carer Allowance</span><span class="date">2025-12-02</span></div>
+        <div class="na"><b>not answered</b><span>How much you'll get → official estimator</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>Vishal Shah</span><span>Illustrative answer · ids and dates show the format</span></div>
+</section>
+
+<!-- 2 · problem -->
+<section class="slide" data-section="The problem" aria-label="The problem">
+  <div class="eyebrow">The problem <span class="num">02</span></div>
+  <h2 class="rv">The site is organised by payment name. <span class="hl">People arrive with a situation.</span></h2>
+  <div class="problem">
+    <div class="rv" style="--d:.15s">
+      <div class="big">11<small>M+</small></div>
+      <p class="big-l">calls to Centrelink and Medicare went unanswered in the year to April 2024</p>
+    </div>
+    <div class="rv" style="--d:.3s">
+      <div class="w-n no">24 min</div>
+      <p class="w-l" style="max-width:520px">average wait on the Centrelink Aged Care line, double the year before</p>
+      <div class="waits">
+        <div class="wait"><span>year before</span><i style="width:240px;--d:.5s"></i><b>12 min</b></div>
+        <div class="wait now"><span>year to April 2024</span><i style="width:480px;--d:.7s"></i><b>24 min</b></div>
+      </div>
+      <p class="w-l" style="max-width:560px;margin-top:26px">Every call that only needed the right page is one a person could answer for themselves, in their own words.</p>
+    </div>
+  </div>
+  <div class="foot"><span>Source: ABC News, 24 July 2024, "Centrelink, Medicare call waiting times balloon and over 11 million calls not answered"</span></div>
+</section>
+
+<!-- 3 · two vocabularies -->
+<section class="slide" data-section="The gap" aria-label="Two vocabularies">
+  <div class="eyebrow">The gap <span class="num">03</span></div>
+  <h2 class="rv">Two vocabularies that never meet, until something translates between them</h2>
+  <div class="bridge">
+    <div>
+      <div class="col-h">What a person types</div>
+      <div class="stack">
+        <div class="phrase rv" style="top:0;--d:.2s">“Mum is 82…”</div>
+        <div class="phrase rv" style="top:140px;--d:.3s">“…moving in with us…”</div>
+        <div class="phrase rv" style="top:280px;--d:.4s">“…dropped to three days a week”</div>
+      </div>
+    </div>
+    <div>
+      <div class="col-h"></div>
+      <div class="lines" aria-hidden="true">
+        <svg viewBox="0 0 330 372" preserveAspectRatio="none">
+          <path d="M0 46 C165 46 165 131 330 131" style="--d:.7s"/>
+          <path d="M0 186 C165 186 165 36 330 36" style="--d:.9s"/>
+          <path d="M0 186 C165 186 165 226 330 226" style="--d:1.05s"/>
+          <path d="M0 326 C165 326 165 321 330 321" style="--d:1.2s"/>
+          <circle cx="0" cy="46" r="5"/><circle cx="0" cy="186" r="5"/><circle cx="0" cy="326" r="5"/>
+          <circle cx="330" cy="36" r="5"/><circle cx="330" cy="131" r="5"/><circle cx="330" cy="226" r="5"/><circle cx="330" cy="321" r="5"/>
+        </svg>
+        <span class="label pop" style="--d:1.5s">query expansion</span>
+      </div>
+    </div>
+    <div>
+      <div class="col-h">What the pages say</div>
+      <div class="stack">
+        <div class="term rv" style="top:0;--d:1.2s">constant care <small>term</small></div>
+        <div class="term rv" style="top:95px;--d:1.3s">care receiver <small>term</small></div>
+        <div class="term rv" style="top:190px;--d:1.4s">Carer Payment <small>payment</small></div>
+        <div class="term rv" style="top:285px;--d:1.5s">income test <small>rule</small></div>
+      </div>
+    </div>
+  </div>
+  <div class="bridge-note">
+    <p>None of these words appear on the pages, so matching on spelling finds nothing.</p>
+    <p>One small model call rewrites the situation into the pages' own terms. Evidence found this way counts for less.</p>
+  </div>
+</section>
+
+<!-- 4 · what we built -->
+<section class="slide" data-section="What we built" aria-label="What we built">
+  <div class="eyebrow">What we built <span class="num">04</span></div>
+  <h2 class="rv">One fixed answer shape, with a source on every line</h2>
+  <div class="built">
+    <div class="anatomy">
+      <div class="rv" style="--d:.15s"><b>facets</b><span>How we split the sentence up, shown to the person so they can spot what we missed</span></div>
+      <div class="rv" style="--d:.25s"><b>payments</b><span>Who each one is for, and how it differs from the similar one next to it</span></div>
+      <div class="rv" style="--d:.35s"><b>signals</b><span>Eligibility signals, never a decision. Only the agency decides.</span></div>
+      <div class="rv" style="--d:.45s"><b>next actions</b><span>Ordered steps that end on the official claim page</span></div>
+      <div class="rv" style="--d:.55s"><b>sources</b><span>Every claim links to a page and that page's own last-updated date</span></div>
+    </div>
+    <div class="rv" style="--d:.3s">
+      <div class="card">
+        <div class="ask">Mum is 82 and moving in with us, I have dropped to three days a week.</div>
+        <div class="body">
+          <div class="facets"><span class="facet">caring for an ageing parent</span><span class="facet">reduced work hours</span></div>
+          <div class="pay"><strong>Carer Payment</strong>
+            <span>Income support if you can't work full time because you give constant care.<span class="cite">c_412</span></span>
+            <span class="diff">Different from Carer Allowance, which is a supplement, not income support.<span class="cite">c_418</span></span></div>
+          <div class="pay"><strong>Carer Allowance</strong>
+            <span>Extra help for daily care, and you can get it while working.<span class="cite">c_418</span></span></div>
+        </div>
+        <div class="sources">
+          <div><b>c_412</b><span>Who can get Carer Payment</span><span class="date">2026-07-14</span></div>
+          <div><b>c_418</b><span>Carer Allowance</span><span class="date">2025-12-02</span></div>
+          <div class="na"><b>not answered</b><span>How much you'll get → official estimator</span></div>
+        </div>
+      </div>
+      <p class="sample">Illustrative · ids and dates show the format, not live output</p>
+    </div>
+  </div>
+</section>
+
+<!-- 5 · voice -->
+<section class="slide" data-section="Any language" aria-label="Speak it in your language">
+  <div class="eyebrow">Speak it, in your language <span class="num">05</span></div>
+  <h2 class="rv">Talk to it the way you would talk to a person. <span class="hl">In the language you think in.</span></h2>
+  <div class="voice">
+    <div>
+      <div class="micbig pop" style="--d:.2s" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></div>
+      <div class="langs">
+        <span class="lg rv" style="--d:.25s">中文</span><span class="lg rv" style="--d:.3s">العربية</span><span class="lg rv" style="--d:.35s">Tiếng Việt</span>
+        <span class="lg rv" style="--d:.4s">ਪੰਜਾਬੀ</span><span class="lg rv" style="--d:.45s">Ελληνικά</span><span class="lg rv" style="--d:.5s">Italiano</span>
+        <span class="lg rv" style="--d:.55s">हिन्दी</span><span class="lg rv" style="--d:.6s">नेपाली</span><span class="lg rv" style="--d:.65s">粵語</span>
+        <span class="lg rv" style="--d:.7s">தமிழ்</span><span class="lg rv" style="--d:.75s">فارسی</span><span class="lg more rv" style="--d:.8s">24 languages</span>
+      </div>
+    </div>
+    <div class="flow">
+      <div class="fq rv" style="--d:.3s"><small>Spoken in Vietnamese</small>Mẹ tôi 82 tuổi và sắp dọn về ở với chúng tôi, tôi đã giảm xuống làm ba ngày một tuần.</div>
+      <div class="fx rv" style="--d:.5s">searched in the pages&#39; own English &rarr;
+        <span class="term-s">principal carer</span><span class="term-s">Carer Payment</span><span class="term-s">reduced work hours</span></div>
+      <div class="rv" style="--d:.7s">
+        <div class="gl"><b>vi</b><span><strong>Carer Payment</strong> (Trợ cấp cho người chăm sóc)</span></div>
+        <div class="gl"><b>ar</b><span dir="rtl" style="text-align:right"><strong>Carer Payment</strong> (راتب مقدّم الرعاية)</span></div>
+        <div class="gl"><b>it</b><span><strong>Carer Payment</strong> (pagamento per chi assiste una persona)</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>Payment names stay in English beside a translated gloss, so people can search the official site and staff recognise them</span><span>glosses from live runs, 18 Sep 2026</span></div>
+</section>
+
+<!-- 5 · refusals -->
+<section class="slide dark" data-section="What it refuses" aria-label="What it refuses">
+  <div class="eyebrow">What it refuses <span class="num">06</span></div>
+  <h2 class="rv">It knows what not to answer, <span class="hl">and where to send you instead</span></h2>
+  <div class="refusals">
+    <div class="ref rv" style="--d:.15s"><span class="x">Record</span><h3>Your claim or balance</h3><p>That needs a login, and this tool holds no personal data at all.</p><span class="to">→ myGov</span></div>
+    <div class="ref rv" style="--d:.22s"><span class="x">Amounts</span><h3>How much you'll get</h3><p>Rates change and depend on your circumstances. A wrong figure hurts most when money is tight.</p><span class="to">→ official estimator</span></div>
+    <div class="ref rv" style="--d:.29s"><span class="x">Time</span><h3>Wait and processing times</h3><p>Operational data we don't have, and must not seem to have.</p><span class="to">→ the phone line</span></div>
+    <div class="ref rv" style="--d:.36s"><span class="x">Decision</span><h3>“Do I qualify?”</h3><p>We show eligibility signals. Only the agency decides.</p><span class="to">→ the payment's own page</span></div>
+    <div class="ref rv" style="--d:.43s"><span class="x">Identifiers</span><h3>CRN, TFN, Medicare, birth date</h3><p>Blocked before search runs, and the person is told why.</p><span class="to">→ nothing is stored</span></div>
+    <div class="ref rv" style="--d:.5s"><span class="x">Scope</span><h3>Business and provider topics</h3><p>A different part of the site, and not in this tool's content.</p><span class="to">→ the right entry point</span></div>
+  </div>
+  <div class="foot"><span>Caught by pattern in code before any model runs</span><span>8 refusal cases in the eval suite</span></div>
+</section>
+
+<!-- 6 · pipeline -->
+<section class="slide" data-section="How it works" aria-label="How it works">
+  <div class="eyebrow">How it works <span class="num">07</span></div>
+  <h2 class="rv">Every route ends in a sourced answer or a clear refusal</h2>
+  <div class="pipe">
+    <div class="track" aria-hidden="true"></div>
+    <div class="node gate rv" style="--d:.1s"><div class="dot">01</div><span class="k">Guard</span><h3>Screen</h3><p>Identifiers and refusal types caught by pattern</p></div>
+    <div class="node rv" style="--d:.2s"><div class="dot">02</div><span class="k">Understand</span><h3>Split and expand</h3><p>Facets, plus a rewrite into the pages' vocabulary</p></div>
+    <div class="node rv" style="--d:.3s"><div class="dot">03</div><span class="k">Retrieve</span><h3>Hybrid search</h3><p>Keyword search plus vectors, combined by weighted rank fusion</p></div>
+    <div class="node gate rv" style="--d:.4s"><div class="dot">04</div><span class="k">Gate</span><h3>Confidence floor</h3><p>Weak evidence means a refusal</p></div>
+    <div class="node rv" style="--d:.5s"><div class="dot">05</div><span class="k">Write</span><h3>Synthesise</h3><p>Fills a strict JSON shape from retrieved passages only</p></div>
+    <div class="node gate rv" style="--d:.6s"><div class="dot">06</div><span class="k">Check</span><h3>Validate</h3><p>Six rules in code, never half an answer</p></div>
+  </div>
+  <div class="exitrow" aria-hidden="true">
+    <span class="exit no rv" style="--d:.8s">refuse</span><span></span><span></span>
+    <span class="exit no rv" style="--d:.9s">refuse</span><span></span>
+    <span class="exit yes rv" style="--d:1s">answer</span>
+  </div>
+  <div class="outcomes">
+    <div class="outcome no rv" style="--d:1s"><b>Refusal</b>Says why, gives the official place to go instead, and the phone number.</div>
+    <div class="outcome yes rv" style="--d:1.1s"><b>Answer</b>In the person's language, with English source titles and dated links to official pages.</div>
+  </div>
+  <div class="foot"><span>296 public payment pages · chunked by heading · one SQLite file</span><span>saal/pipeline.py</span></div>
+</section>
+
+<!-- 7 · validator -->
+<section class="slide" data-section="The validator" aria-label="The validator">
+  <div class="eyebrow">How it stays honest <span class="num">08</span></div>
+  <h2 class="rv">Six checks run after the model, in code, not left to the prompt</h2>
+  <div class="checks">
+    <div class="check"><div class="tick" style="--d:.3s"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div><div><span class="n">RULE 1</span><h3>No invented sources</h3><p>Every cited id was actually retrieved for this question</p></div></div>
+    <div class="check"><div class="tick" style="--d:.45s"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div><div><span class="n">RULE 2</span><h3>Nothing unsourced</h3><p>Every eligibility signal and next action cites a source</p></div></div>
+    <div class="check"><div class="tick" style="--d:.6s"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div><div><span class="n">RULE 3</span><h3>No invented payments</h3><p>Each payment name appears word for word in a passage it cites</p></div></div>
+    <div class="check"><div class="tick" style="--d:.75s"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div><div><span class="n">RULE 4</span><h3>Links only to cited pages</h3><p>A link that doesn't match a cited source is removed</p></div></div>
+    <div class="check"><div class="tick" style="--d:.9s"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div><div><span class="n">RULE 5</span><h3>Right shape or nothing</h3><p>If the JSON is malformed, retry once, then refuse</p></div></div>
+    <div class="check"><div class="tick" style="--d:1.05s"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div><div><span class="n">RULE 6</span><h3>No money or time figures</h3><p>A dollar figure or wait time is removed and listed as not answered</p></div></div>
+  </div>
+  <div class="pull rv" style="--d:1.2s"><b>Rule 3</b><span>does most of the work: the model can't name a payment the pages never mention.</span></div>
+</section>
+
+<!-- 8 · evidence -->
+<section class="slide" data-section="Evidence" aria-label="Evidence">
+  <div class="eyebrow">Measured, not just demoed <span class="num">09</span></div>
+  <h2 class="rv">43 eval questions on 379 real pages, and every scorecard kept, pass or fail</h2>
+  <div class="evidence">
+    <div>
+      <div class="legend"><span><i style="background:#CDD3CA"></i>first real run</span><span><i style="background:var(--euc)"></i>after a day of eval-driven fixes</span><span><i style="border-left:2px dashed var(--brick);width:2px;border-radius:0"></i>gate</span></div>
+      <div class="metric"><div class="name">Right page found<small>retrieval recall</small></div>
+        <div class="bars"><div class="bar b"><i style="width:394px;--d:.3s"></i><span>0.82</span></div><div class="bar a"><i style="width:427px;--d:.45s"></i><span>0.89</span></div></div></div>
+      <div class="metric"><div class="name">Citation faithfulness<small>judged by Claude · gate 1.00</small></div>
+        <div class="bars"><div class="gateline" style="left:480px"><b>1.00</b></div><div class="bar b"><i style="width:403px;--d:.5s"></i><span>0.84</span></div><div class="bar a"><i style="width:446px;--d:.65s"></i><span>0.93</span></div></div></div>
+      <div class="metric"><div class="name">Payment recall<small>gate 0.90</small></div>
+        <div class="bars"><div class="gateline" style="left:432px"><b>0.90</b></div><div class="bar b"><i style="width:355px;--d:.7s"></i><span>0.74</span></div><div class="bar a"><i style="width:365px;--d:.85s"></i><span>0.76</span></div></div></div>
+      <div class="metric"><div class="name">Compound recall<small>two or more payments · gate 0.80</small></div>
+        <div class="bars"><div class="gateline" style="left:384px"><b>0.80</b></div><div class="bar b"><i style="width:278px;--d:.9s"></i><span>0.58</span></div><div class="bar a"><i style="width:322px;--d:1.05s"></i><span>0.67</span></div></div></div>
+    </div>
+    <div class="held rv" style="--d:.4s">
+      <span class="h">Safety gates held in every run</span>
+      <div class="stat"><b>0</b><span>fabricated payments</span></div>
+      <div class="stat"><b>100%</b><span>refusal precision</span></div>
+      <div class="stat"><b>0%</b><span>over-refusal</span></div>
+      <div class="stat"><b>11s</b><span>median answer, down from 26s</span></div>
+    </div>
+  </div>
+  <div class="caveat"><b>Read honestly</b><span>Four quality gates are still below target: payment recall, compound recall, faithfulness and latency (6s gate). The remaining misses are named in docs/decisions.md D21, mostly Family Tax Benefit on family questions.</span></div>
+</section>
+
+<!-- 9 · engineering -->
+<section class="slide" data-section="Engineering" aria-label="Engineering choices">
+  <div class="eyebrow">Engineering choices <span class="num">10</span></div>
+  <h2 class="rv">Small, dependency-free, and hard to misuse</h2>
+  <div class="tiles">
+    <div class="tile rv" style="--d:.1s"><div class="v">0</div><h3>Required dependencies</h3><p>Standard library only. A fresh clone runs with nothing installed.</p></div>
+    <div class="tile rv" style="--d:.17s"><div class="v">99</div><h3>Offline tests</h3><p>Pass in under a second, with no network and no key</p></div>
+    <div class="tile rv" style="--d:.24s"><div class="v">1<small> file</small></div><h3>SQLite corpus</h3><p>Full-text search plus vectors, no database server</p></div>
+    <div class="tile rv" style="--d:.31s"><div class="v">0</div><h3>Questions logged</h3><p>The request log is off, so people's circumstances are never stored</p></div>
+    <div class="tile rv" style="--d:.38s"><div class="v">379<small> / 4,304</small></div><h3>Pages in scope</h3><p>Chosen by payment and page type, including declared disaster events</p></div>
+    <div class="tile rv" style="--d:.45s"><div class="v">10<small> s</small></div><h3>Crawl delay honoured</h3><p>Follows robots.txt and the site's requested rate</p></div>
+    <div class="tile rv" style="--d:.52s"><div class="v">21</div><h3>Decisions recorded</h3><p>Including the defects the eval suite and Day 0 caught</p></div>
+    <div class="tile rv" style="--d:.59s"><div class="v">24</div><h3>Voice languages</h3><p>Speech in, answers back in the same language, read aloud on request</p></div>
+  </div>
+</section>
+
+<!-- 10 · value -->
+<section class="slide" data-section="The value" aria-label="The value">
+  <div class="eyebrow">The value <span class="num">11</span></div>
+  <h2 class="rv">Who gains, and how</h2>
+  <div class="value">
+    <div class="aud rv" style="--d:.15s"><span class="who">People</span><h3>Start from their life, not a payment name</h3>
+      <ul><li>Every payment that applies to a compound situation, in one answer</li><li>Answers in their own language</li><li>Source links they can show to anyone</li></ul></div>
+    <div class="aud rv" style="--d:.25s"><span class="who">The agency</span><h3>People reach the official page, not a phone queue</h3>
+      <ul><li>Every answer sends traffic to its own pages</li><li>Could take pressure off calls that only need the right page</li><li>No personal data, and every claim traces to a dated page</li></ul></div>
+    <div class="aud rv" style="--d:.35s"><span class="who">Delivery teams</span><h3>A pattern worth reusing</h3>
+      <ul><li>Fixed answer shape, checks in code, refusals designed in</li><li>Quality shown by a scorecard, not by how the demo feels</li><li>Page dates flag stale content at no extra cost</li></ul></div>
+  </div>
+  <div class="foot"><span>Reduction in calls is a hypothesis to test, not a result</span></div>
+</section>
+
+<!-- 11 · built with claude -->
+<section class="slide" data-section="Built with Claude" aria-label="Built with Claude">
+  <div class="eyebrow">Built with Claude <span class="num">12</span></div>
+  <h2 class="rv">Claude runs the product, <span class="hl">and Claude built it</span></h2>
+  <div class="value">
+    <div class="aud rv" style="--d:.15s"><span class="who">In the product</span><h3>Three narrow jobs for Claude</h3>
+      <ul><li>Claude Sonnet 5 writes each answer into a fixed JSON shape, in the person's language</li><li>Claude Haiku 4.5 rewrites the situation into the pages' English vocabulary</li><li>Haiku also judges every cited claim in the eval suite</li></ul></div>
+    <div class="aud rv" style="--d:.25s"><span class="who">Building it</span><h3>Claude Code as the engineer</h3>
+      <ul><li>Measured the live site, found it had restructured, and rescoped the crawl</li><li>Built the crawler, retrieval, validator, interface, voice and this deck</li><li>Tuned by scorecard: trace coverage from 11 to 29 of 31 in a day</li></ul></div>
+    <div class="aud rv" style="--d:.35s"><span class="who">Keeping it honest</span><h3>Defects found, not hidden</h3>
+      <ul><li>Nine real defects caught by evals and tests, each recorded with its fix</li><li>Empty answers traced to thinking tokens, a hung server to browser preconnects</li><li>Rules held: never lower the floor, never weaken the validator</li></ul></div>
+  </div>
+  <div class="foot"><span>Every decision and defect: docs/decisions.md, D1 to D21</span></div>
+</section>
+
+<!-- 12 · close -->
+<section class="slide dark" data-section="Where it stands" aria-label="Where it stands">
+  <div class="eyebrow">Where it stands <span class="num">13</span></div>
+  <h2 class="rv">Working today on the real site. <span class="hl">Ready for the people it is for.</span></h2>
+  <div class="timeline">
+    <div class="phase done rv" style="--d:.15s"><span class="pin"></span><span class="lbl">Done</span>
+      <ul><li>379 official pages crawled politely, every one dated</li><li>Voice and answers in 24 languages</li><li>Validator, refusals, identifier screen, 99 tests</li><li>Real scorecards, failures kept</li></ul></div>
+    <div class="phase now rv" style="--d:.3s"><span class="pin"></span><span class="lbl">Next</span>
+      <ul><li>Recall to the 0.90 gate: Family Tax Benefit on family questions</li><li>Latency to the 6s gate</li><li>Scheduled recrawl as disaster events open and close</li></ul></div>
+    <div class="phase next rv" style="--d:.45s"><span class="pin"></span><span class="lbl">Then</span>
+      <ul><li>Test with multicultural community organisations</li><li>Measure time to the right claim page, before and after</li><li>Screen reader and accessibility audit</li></ul></div>
+  </div>
+  <div class="closer rv" style="--d:.6s">
+    <p>Every answer ends on the <span class="hl">official page.</span></p>
+    <small>Try the recorded demo: vishal8shah.github.io/payment-finder<br>Unofficial · not affiliated with Services Australia · content © Commonwealth of Australia, CC BY 4.0</small>
+  </div>
+</section>
+
+</main>
+</div>
+
+<nav class="controls" aria-label="Slide controls">
+  <button type="button" id="prev" aria-label="Previous slide">←</button>
+  <span id="count" aria-live="polite">01 / 12</span>
+  <button type="button" id="next" aria-label="Next slide">→</button>
+  <div class="rail" id="rail"></div>
+  <span id="section">Cover</span>
+  <button type="button" id="fs" aria-label="Toggle fullscreen">⤢ F</button>
+</nav>
+
+<script>
+(function(){
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var frame = document.getElementById('frame'), rail = document.getElementById('rail');
+  var prev = document.getElementById('prev'), next = document.getElementById('next');
+  var count = document.getElementById('count'), section = document.getElementById('section');
+  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var i = 0, typer = null;
+
+  // Waffle charts: 100 dots, n filled.
+  [['w12',12],['w28',28]].forEach(function(w){
+    var el = document.getElementById(w[0]), html = ''; if (!el) return;
+    for (var k = 0; k < 100; k++) html += '<i class="' + (k < w[1] ? 'on' : '') + '" style="--i:' + k + '"></i>';
+    el.innerHTML = html;
+  });
+
+  // Rail.
+  slides.forEach(function(s, k){
+    var b = document.createElement('button');
+    b.type = 'button'; b.setAttribute('aria-label', 'Go to slide ' + (k + 1) + ': ' + s.dataset.section);
+    b.addEventListener('click', function(){ show(k); });
+    rail.appendChild(b);
+  });
+
+  function fit(){
+    var w = window.innerWidth - 48, h = window.innerHeight - 56 - 32;
+    var s = Math.max(.1, Math.min(w / 1600, h / 900));
+    document.documentElement.style.setProperty('--s', s);
+  }
+
+  function type(){
+    var el = document.getElementById('typed'), full = el.getAttribute('data-full') || el.textContent;
+    el.setAttribute('data-full', full);
+    clearInterval(typer);
+    if (reduce) { el.textContent = full; return; }
+    var n = 0; el.textContent = '';
+    setTimeout(function(){
+      typer = setInterval(function(){ n++; el.textContent = full.slice(0, n); if (n >= full.length) clearInterval(typer); }, 22);
+    }, 500);
+  }
+
+  function pad(n){ return (n < 10 ? '0' : '') + n; }
+
+  function show(n){
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach(function(s, k){ s.hidden = k !== i; });
+    Array.prototype.forEach.call(rail.children, function(b, k){
+      b.classList.toggle('past', k < i);
+      if (k === i) b.setAttribute('aria-current', 'true'); else b.removeAttribute('aria-current');
+    });
+    count.textContent = pad(i + 1) + ' / ' + pad(slides.length);
+    section.textContent = slides[i].dataset.section;
+    prev.disabled = i === 0; next.disabled = i === slides.length - 1;
+    if (i === 0) type();
+    try { history.replaceState(null, '', '#' + (i + 1)); } catch (e) {}
+  }
+
+  function fromHash(){ var n = parseInt((location.hash || '').slice(1), 10); return n >= 1 && n <= slides.length ? n - 1 : 0; }
+  function fullscreen(){
+    try {
+      if (document.fullscreenElement) document.exitFullscreen();
+      else if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
+    } catch (e) {}
+  }
+
+  prev.addEventListener('click', function(){ show(i - 1); });
+  next.addEventListener('click', function(){ show(i + 1); });
+  document.getElementById('fs').addEventListener('click', fullscreen);
+  document.addEventListener('keydown', function(e){
+    if (e.altKey || e.ctrlKey || e.metaKey) return;
+    var k = e.key;
+    if (k === 'ArrowRight' || k === 'PageDown' || k === ' ') { e.preventDefault(); show(i + 1); }
+    else if (k === 'ArrowLeft' || k === 'PageUp') { e.preventDefault(); show(i - 1); }
+    else if (k === 'Home') show(0);
+    else if (k === 'End') show(slides.length - 1);
+    else if (k === 'f' || k === 'F') fullscreen();
+  });
+  window.addEventListener('resize', fit);
+  window.addEventListener('hashchange', function(){ var n = fromHash(); if (n !== i) show(n); });
+  fit(); show(fromHash());
+})();
+</script>

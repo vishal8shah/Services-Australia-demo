@@ -18,7 +18,7 @@ from .retrieve.search import confidence_of, search
 def answer(question: str, *, conn=None, provider=None, embedder=None, expander=None,
            language: str | None = None, top_k: int | None = None) -> dict:
     started = time.perf_counter()
-    lang = language or lang_mod.detect(question)
+    lang = lang_mod.normalise(language) or lang_mod.detect(question)
     out = contract.empty(lang)
     out["query"] = question
     out["query_expansions"] = []
@@ -121,3 +121,38 @@ def _assemble(out, result, hits, finish, provider, attempts, retrieved_titles):
                   attempts=attempts,
                   retrieved_titles=retrieved_titles,
                   validator_warnings=result.warnings)
+
+
+def plan(question: str, *, conn, language: str | None = None, expander=None,
+         embedder=None) -> dict:
+    """The fast half: guard, classify, decompose, expand, retrieve. No synthesis.
+
+    The interface calls this beside `answer` so a person sees, within a few
+    seconds, how their sentence was read and which official pages were found,
+    while the answer is still being written and checked. It exposes nothing the
+    answer does not: facets, English search phrases, page titles and dates.
+    """
+    lang = lang_mod.normalise(language) or lang_mod.detect(question)
+    base = {"language": lang, "rtl": lang_mod.is_rtl(lang), "refusal": None,
+            "query_facets": [], "query_expansions": [], "pages": [], "confidence": 0.0}
+    if guard.detect(question):
+        base["refusal"] = {"class": "pii_detected"}
+        return base
+    pre = refuse.classify(question)
+    if pre is not None:
+        base["refusal"] = {"class": pre.cls}
+        return base
+    facet_list = facets_mod.decompose(question)
+    expansions = (expander or get_expander()).expand(question)
+    hits = search(conn, question, facets=facet_list, expansions=expansions,
+                  embedder=embedder)
+    seen, pages = set(), []
+    for h in hits:
+        if h.chunk.url in seen:
+            continue
+        seen.add(h.chunk.url)
+        pages.append({"title": h.chunk.title, "url": h.chunk.url,
+                      "page_last_updated": h.chunk.page_last_updated})
+    base.update(query_facets=facet_list, query_expansions=expansions, pages=pages[:6],
+                confidence=round(confidence_of(hits), 4))
+    return base

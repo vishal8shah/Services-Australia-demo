@@ -99,7 +99,7 @@ def rebuild() -> int:
             raw = config.RAW / f"{hashlib.sha1(url.encode()).hexdigest()}.html"
             if not raw.exists():
                 continue
-            page = extract(raw.read_text(), url)
+            page = extract(raw.read_text(encoding="utf-8"), url)
             chunks = chunk_page(page)
             store.replace_chunks(conn, url, chunks)
             total += len(chunks)

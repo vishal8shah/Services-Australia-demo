@@ -116,12 +116,14 @@ def unpack(blob: bytes | None) -> list[float] | None:
 
 def open_conn(path: Path | str | None = None) -> sqlite3.Connection:
     """Long lived connection with the schema applied. Callers close it."""
+    # check_same_thread off: the API server hands one connection to worker
+    # threads and serialises access with its own lock.
     if path == ":memory:":
-        conn = sqlite3.connect(":memory:")
+        conn = sqlite3.connect(":memory:", check_same_thread=False)
     else:
         p = Path(path or config.DB_PATH)
         p.parent.mkdir(parents=True, exist_ok=True)
-        conn = sqlite3.connect(p)
+        conn = sqlite3.connect(p, check_same_thread=False)
     conn.row_factory = sqlite3.Row
     conn.executescript(SCHEMA)
     return conn
@@ -214,7 +216,7 @@ def counts(conn) -> dict:
 
 def load_fixture(conn, path: Path | str) -> int:
     """Load a JSON corpus fixture. Used by tests and by the offline demo."""
-    docs = json.loads(Path(path).read_text())
+    docs = json.loads(Path(path).read_text(encoding="utf-8"))
     n = 0
     for doc in docs:
         chunks = [

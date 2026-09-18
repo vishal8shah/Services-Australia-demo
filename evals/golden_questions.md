@@ -30,7 +30,7 @@
 | id | Question | Expected families, confirm on Day 1 | shape | chunk |
 |---|---|---|---|---|
 | A1 | I turn 67 next year and I want to keep working two days a week. | Age Pension, Work Bonus, Pensioner Concession Card | compound | |
-| A2 | Dad is going into residential aged care and I am his power of attorney. | Aged care means assessment, nominee arrangements | compound | |
+| A2 | Dad is going into residential aged care and I am his power of attorney. | Aged care calculation of your cost of care, nominee arrangements | compound | |
 | A3 | I am retired, I own my home, and I have a small super balance. | Age Pension, assets test, Pensioner Concession Card | single | |
 | A4 | I am 66 and my assets are too high for the Age Pension. | Commonwealth Seniors Health Card | single | |
 
@@ -75,7 +75,7 @@
 | id | Question | Expected families, confirm on Day 1 | shape | chunk |
 |---|---|---|---|---|
 | B1 | My husband died last month, we were both on the pension. | Bereavement Payment, single rate transition, notification obligations | compound | |
-| B2 | My partner moved in with me three weeks ago. | Member of a couple assessment, obligation to notify | single | |
+| B2 | My partner moved in with me three weeks ago. | Updating your relationship status (member of a couple), obligation to notify | single | |
 
 ## I. Health and concessions
 

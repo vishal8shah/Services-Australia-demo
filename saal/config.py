@@ -6,6 +6,7 @@ you cannot grep is a threshold you cannot tune against the eval suite.
 from __future__ import annotations
 
 import os
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -23,7 +24,7 @@ def _load_env_file(path: Path) -> bool:
     """
     if not path.exists():
         return False
-    for raw in path.read_text().splitlines():
+    for raw in path.read_text(encoding="utf-8").splitlines():
         line = raw.strip()
         if not line or line.startswith("#"):
             continue
@@ -42,8 +43,12 @@ def _load_env_file(path: Path) -> bool:
 
 # Loaded before anything below reads the environment. SAAL_ENV_FILE points
 # somewhere else when you keep secrets outside the working tree.
-ENV_FILES = [Path(os.environ["SAAL_ENV_FILE"])] if os.environ.get("SAAL_ENV_FILE") else [
-    ROOT / ".env.local", ROOT / ".env"]
+# Under the test runner nothing is read from disk: a .env that turns on the
+# anthropic expander would otherwise send the offline suite to the network, and
+# fail it, the moment someone follows step 1 of the setup. See D13.
+ENV_FILES = [] if "unittest" in sys.modules else (
+    [Path(os.environ["SAAL_ENV_FILE"])] if os.environ.get("SAAL_ENV_FILE") else [
+        ROOT / ".env.local", ROOT / ".env"])
 ENV_LOADED = [str(p) for p in ENV_FILES if _load_env_file(p)]
 
 # Paths
@@ -54,9 +59,6 @@ DB_PATH = Path(os.environ.get("SAAL_DB", DATA / "corpus.db"))
 # Crawl
 BASE = "https://www.servicesaustralia.gov.au"
 SITEMAP = os.environ.get("SAAL_SITEMAP", f"{BASE}/sitemap.xml")
-INCLUDE_PREFIXES = tuple(
-    p for p in os.environ.get("SAAL_INCLUDE", "/individuals/").split(",") if p
-)
 USER_AGENT = os.environ.get(
     "SAAL_UA",
     "saal-research-prototype/0.1 (unofficial; contact via repository issues)",
@@ -78,6 +80,12 @@ FACET_WEIGHT = float(os.environ.get("SAAL_FACET_WEIGHT", "0.7"))
 # Confidence floor below which we refuse rather than answer. Tuned on the
 # golden suite, never on a single hand run question.
 SCORE_FLOOR = float(os.environ.get("SAAL_SCORE_FLOOR", "0.30"))
+# Ranking only, never confidence (D20). Rule pages such as "Assets test for X" rank
+# at this share of their fused score; any one page contributes at most PER_PAGE
+# chunks to the top k, which leaves room for a compound question's second payment.
+GENERIC_PAGE_WEIGHT = float(os.environ.get("SAAL_GENERIC_PAGE_WEIGHT", "0.5"))
+PRIMARY_PAGE_WEIGHT = float(os.environ.get("SAAL_PRIMARY_PAGE_WEIGHT", "1.5"))
+PER_PAGE = int(os.environ.get("SAAL_PER_PAGE", "2"))
 
 # Freshness
 STALE_AFTER_DAYS = int(os.environ.get("SAAL_STALE_AFTER_DAYS", "548"))  # 18 months
@@ -101,6 +109,10 @@ OPENAI_BASE = os.environ.get("OPENAI_BASE_URL", "https://api.openai.com")
 # none of them is hard coded at a call site. Check what your key can see with:
 #   curl https://api.openai.com/v1/models -H "Authorization: Bearer $OPENAI_API_KEY"
 DEFAULT_MODELS = {"anthropic": "claude-sonnet-5", "openai": "gpt-4o-mini"}
+# Synthesis fills a fixed JSON shape from supplied chunks and every claim is checked
+# in code afterwards, so it does not need deep thinking. "low" took median latency
+# from 25.7s towards the 6s gate (D20). Set to "" to use the model default.
+SYNTH_EFFORT = os.environ.get("SAAL_SYNTH_EFFORT", "low")
 FAST_MODELS = {"anthropic": "claude-haiku-4-5-20251001", "openai": "gpt-4o-mini"}
 OPENAI_EMBED_MODEL = os.environ.get("SAAL_OPENAI_EMBED_MODEL", "text-embedding-3-small")
 # Cosine runs in pure Python, so dimensions are latency. text-embedding-3-*

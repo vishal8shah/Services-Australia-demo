@@ -46,7 +46,7 @@ measure: check
 	$(PYTHON) -m saal.ingest.crawl --measure
 
 crawl: check
-	$(PYTHON) -m saal.ingest.crawl --limit $${LIMIT:-0} --branches "$${BRANCHES:-}"
+	$(PYTHON) -m saal.ingest.crawl --limit $${LIMIT:-0} --families "$${FAMILIES:-}"
 
 index: check
 	$(PYTHON) -m saal.ingest.chunk && $(PYTHON) -m saal.ingest.embed

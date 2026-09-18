@@ -17,13 +17,27 @@ RANGES = [
     ("ja", re.compile(r"[぀-ヿ]")),
     ("ru", re.compile(r"[Ѐ-ӿ]")),
     ("el", re.compile(r"[Ͱ-Ͽ]")),
+    ("pa", re.compile("[਀-੿]")),
+    ("bn", re.compile("[ঀ-৿]")),
+    ("ta", re.compile("[஀-௿]")),
+    ("si", re.compile("[඀-෿]")),
+    ("th", re.compile("[฀-๿]")),
 ]
 VIETNAMESE = re.compile(r"[ăâđêôơưĂÂĐÊÔƠƯ]|[̀-̣]")
 RTL = {"ar", "fa", "he", "ur"}
 
-NAMES = {"en": "English", "zh": "Simplified Chinese", "ar": "Arabic",
-         "vi": "Vietnamese", "hi": "Hindi", "ko": "Korean", "ja": "Japanese",
-         "ru": "Russian", "el": "Greek"}
+# The languages most spoken at home in Australia after English, plus a few more.
+# The interface lets a person pick one, which is what separates Italian from English
+# when the script cannot. Codes are BCP 47 primary subtags, "yue" is Cantonese.
+NAMES = {"en": "English", "zh": "Simplified Chinese", "yue": "Cantonese (Traditional Chinese script)",
+         "ar": "Arabic", "vi": "Vietnamese", "pa": "Punjabi", "el": "Greek",
+         "it": "Italian", "hi": "Hindi", "ne": "Nepali", "tl": "Tagalog", "fil": "Filipino",
+         "es": "Spanish", "ko": "Korean", "ja": "Japanese", "ta": "Tamil", "ur": "Urdu",
+         "fa": "Persian", "id": "Indonesian", "th": "Thai", "ru": "Russian", "tr": "Turkish",
+         "bn": "Bengali", "si": "Sinhala", "ml": "Malayalam", "te": "Telugu", "gu": "Gujarati",
+         "mk": "Macedonian", "hr": "Croatian", "sr": "Serbian", "pl": "Polish", "pt": "Portuguese",
+         "fr": "French", "de": "German", "so": "Somali", "sw": "Swahili", "my": "Burmese",
+         "km": "Khmer", "am": "Amharic", "he": "Hebrew"}
 
 
 def detect(text: str) -> str:
@@ -36,7 +50,18 @@ def detect(text: str) -> str:
 
 
 def name(code: str) -> str:
-    return NAMES.get(code, code)
+    return NAMES.get(code, NAMES.get(code.split("-")[0].lower(), code))
+
+
+def normalise(code: str | None) -> str | None:
+    """"vi-VN" from a speech recogniser becomes "vi"; Cantonese keeps "yue"."""
+    if not code:
+        return None
+    c = code.strip().lower()
+    if c in ("zh-hk", "zh-tw", "yue-hk"):
+        return "yue"
+    primary = c.split("-")[0]
+    return primary if re.fullmatch(r"[a-z]{2,3}", primary) else None
 
 
 def is_rtl(code: str) -> bool:

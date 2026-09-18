@@ -4,7 +4,7 @@ from pathlib import Path
 
 from saal.answer import guard, refuse
 
-GOLDEN = json.loads((Path(__file__).resolve().parent.parent / "evals" / "golden.json").read_text())
+GOLDEN = json.loads((Path(__file__).resolve().parent.parent / "evals" / "golden.json").read_text(encoding="utf-8"))
 
 
 class TestGuard(unittest.TestCase):

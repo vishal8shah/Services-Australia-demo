@@ -32,6 +32,7 @@ DATE_TEXT = re.compile(
     r"(\d{1,2}\s+[A-Za-z]+\s+\d{4}|\d{4}-\d{2}-\d{2})", re.I
 )
 DATE_FORMATS = ("%d %B %Y", "%d %b %Y", "%Y-%m-%d")
+TITLE_SPLIT = re.compile(r"\s+[|–-]\s+")
 
 
 @dataclass
@@ -63,6 +64,7 @@ class _SectionParser(HTMLParser):
         super().__init__(convert_charrefs=True)
         self.title: str | None = None
         self.h1: str | None = None
+        self.og_title: str | None = None
         self.meta_date: str | None = None
         self.sections: list[Section] = []
         self._skip_depth = 0
@@ -113,6 +115,8 @@ class _SectionParser(HTMLParser):
             name = (a.get("name") or a.get("property") or "").lower()
             if name in {"dcterms.modified", "article:modified_time", "last-modified"}:
                 self.meta_date = _parse_date((a.get("content") or "")[:10]) or self.meta_date
+            elif name == "og:title" and a.get("content"):
+                self.og_title = a["content"]
             return
         if tag == "title":
             self._in_title = True
@@ -173,8 +177,13 @@ def extract(html: str, url: str) -> Page:
     parser.feed(html)
     parser.close()
 
-    title = (parser.h1 or parser.title or url).split("|")[0].strip()
-    title = re.sub(r"\s+", " ", title)
+    # The h1 comes last. Most payment subpages have an h1 of "Who can get it" or
+    # "How to claim", and the payment it belongs to is only in og:title and the
+    # document title ("Who can get JobSeeker Payment - JobSeeker Payment - ...").
+    # A chunk titled "Who can get it" is anonymous to retrieval. See D16.
+    doc_title = TITLE_SPLIT.split(parser.title or "")[0].strip()
+    title = parser.og_title or doc_title or parser.h1 or url
+    title = re.sub(r"\s+", " ", title).strip()
 
     date_iso = parser.meta_date
     if not date_iso:
@@ -192,7 +201,7 @@ def extract(html: str, url: str) -> Page:
 
 
 BOILERPLATE_LINE = re.compile(
-    r"^\s*(page last updated.*|print this page|share this page|was this page useful\??|"
+    r"^\s*(page last updated.*|print this page|share this page|was this page useful\??|listen|"
     r"we acknowledge the traditional custodians.*|read more about.*cookies.*)\s*$", re.I
 )
 

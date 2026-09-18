@@ -1,8 +1,9 @@
-"""Polite crawler for the public individuals content, plus the Day 0 measurement.
+"""Polite crawler for the public payment content, plus the Day 0 measurement.
 
 `--measure` answers the only question Day 0 asks: is crawling permitted, at what
-rate, how many individuals pages are there, and how do they split by branch. Run
+rate, how many pages are in scope, and how do they split by payment family. Run
 that before writing anything else, and let the real number decide the scope.
+What counts as in scope lives in `scope.py`.
 """
 from __future__ import annotations
 
@@ -21,6 +22,7 @@ from pathlib import Path
 
 from .. import config, store
 from .extract import extract
+from .scope import families_of, in_scope
 
 LOC = re.compile(r"<loc>\s*([^<\s]+)\s*</loc>", re.I)
 
@@ -64,46 +66,37 @@ def sitemap_urls(sitemap: str | None = None, seen: set[str] | None = None) -> li
     return out
 
 
-def in_scope(url: str) -> bool:
-    return any(p in url for p in config.INCLUDE_PREFIXES)
-
-
-def branch_of(url: str) -> str:
-    parts = [p for p in url.split("/") if p]
-    for i, p in enumerate(parts):
-        if p == "individuals" and i + 1 < len(parts):
-            return parts[i + 1]
-    return "(root)"
-
-
 def measure() -> dict:
     """Day 0. Prints the numbers that decide the corpus scope."""
     rp, delay = robots()
-    allowed = rp.can_fetch(config.USER_AGENT, f"{config.BASE}/individuals/")
     urls = sitemap_urls()
     scoped = [u for u in urls if in_scope(u)]
-    branches = Counter(branch_of(u) for u in scoped)
-    print(f"crawl permitted for /individuals/ : {allowed}")
+    blocked = [u for u in scoped if not rp.can_fetch(config.USER_AGENT, u)]
+    allowed = bool(scoped) and not blocked
+    families = Counter(f for u in scoped for f in families_of(u))
+    effective = max(config.CRAWL_DELAY, delay or 0)
+    print(f"crawl permitted for scoped urls  : {allowed} ({len(blocked)} disallowed)")
     print(f"declared crawl delay             : {delay if delay is not None else 'none declared'}")
     print(f"urls in sitemap                  : {len(urls)}")
-    print(f"urls in scope {config.INCLUDE_PREFIXES} : {len(scoped)}")
-    print("\ntop branches:")
-    for name, n in branches.most_common(30):
+    print(f"urls in scope                    : {len(scoped)}")
+    print(f"estimated crawl time             : {len(scoped) * effective / 60:.0f} minutes")
+    print("\npages per family (a page can serve more than one):")
+    for name, n in families.most_common():
         print(f"  {n:6d}  {name}")
     out = config.DATA / "day0_urls.txt"
     out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text("\n".join(scoped))
+    out.write_text("\n".join(scoped), encoding="utf-8")
     print(f"\nscoped urls written to {out}")
     return {"allowed": allowed, "delay": delay, "total": len(urls),
-            "scoped": len(scoped), "branches": dict(branches)}
+            "scoped": len(scoped), "families": dict(families)}
 
 
-def crawl(limit: int = 0, branches: tuple[str, ...] = (), force: bool = False) -> int:
+def crawl(limit: int = 0, families: tuple[str, ...] = (), force: bool = False) -> int:
     rp, declared = robots()
     delay = max(config.CRAWL_DELAY, declared or 0)
     urls = [u for u in sitemap_urls() if in_scope(u)]
-    if branches:
-        urls = [u for u in urls if branch_of(u) in branches]
+    if families:
+        urls = [u for u in urls if set(families_of(u)) & set(families)]
     if limit:
         urls = urls[:limit]
     print(f"{len(urls)} urls, crawl delay {delay}s")
@@ -130,7 +123,7 @@ def crawl(limit: int = 0, branches: tuple[str, ...] = (), force: bool = False) -
                 time.sleep(delay)
                 continue
             html = body.decode("utf-8", "replace")
-            (config.RAW / f"{hashlib.sha1(url.encode()).hexdigest()}.html").write_text(html)
+            (config.RAW / f"{hashlib.sha1(url.encode()).hexdigest()}.html").write_text(html, encoding="utf-8")
             page = extract(html, url)
             store.upsert_page(conn, url=url, title=page.title, html_sha=sha,
                               fetched_at=_now(), page_last_updated=page.page_last_updated,
@@ -151,14 +144,14 @@ def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--measure", action="store_true", help="Day 0: count and report only")
     ap.add_argument("--limit", type=int, default=0)
-    ap.add_argument("--branches", default="", help="comma separated, narrows the corpus")
+    ap.add_argument("--families", default="", help="comma separated, e.g. caring,work")
     ap.add_argument("--force", action="store_true", help="refetch unchanged pages")
     args = ap.parse_args(argv)
     if args.measure:
         measure()
         return 0
-    branches = tuple(b for b in args.branches.split(",") if b)
-    crawl(limit=args.limit, branches=branches, force=args.force)
+    families = tuple(f for f in args.families.split(",") if f)
+    crawl(limit=args.limit, families=families, force=args.force)
     return 0
 
 

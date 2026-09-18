@@ -312,7 +312,10 @@ curl -s https://www.servicesaustralia.gov.au/copyright | head -100
 
 **Record here on Day 0:**
 
-- Individuals pages found: `TBD`
-- Crawl permitted: `TBD`
-- Crawl delay declared: `TBD`
-- Corpus decision, full or three branches: `TBD`
+Recorded 2026-09-17 with `make measure`. The site no longer has an `/individuals/`
+section: all 4,304 sitemap urls sit at the root, so the `grep` commands above count 0.
+
+- Individuals pages found: `0 under /individuals/ (section removed); 4,304 urls in the flat sitemap; 296 in scope by family and page type, see D14`
+- Crawl permitted: `yes, all 296 scoped urls allowed by robots.txt`
+- Crawl delay declared: `10 seconds, about 49 minutes for the scoped corpus`
+- Corpus decision, full or three branches: `neither: payment families scoped by slug (saal/ingest/scope.py), all nine golden families covered`

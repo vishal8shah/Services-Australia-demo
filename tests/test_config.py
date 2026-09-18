@@ -23,7 +23,7 @@ class TestEnvFile(unittest.TestCase):
     def setUp(self):
         self.dir = tempfile.TemporaryDirectory()
         self.path = Path(self.dir.name) / ".env"
-        self.path.write_text(SAMPLE)
+        self.path.write_text(SAMPLE, encoding="utf-8")
         self.addCleanup(self.dir.cleanup)
 
     def load(self, environ=None):
@@ -59,7 +59,7 @@ class TestEnvFile(unittest.TestCase):
 
 class TestSecretsAreIgnored(unittest.TestCase):
     def test_gitignore_covers_env_files_but_not_the_example(self):
-        rules = (Path(__file__).resolve().parent.parent / ".gitignore").read_text()
+        rules = (Path(__file__).resolve().parent.parent / ".gitignore").read_text(encoding="utf-8")
         self.assertIn(".env", rules)
         self.assertIn("!.env.example", rules)
 

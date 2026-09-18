@@ -142,7 +142,7 @@
       "type": "answer",
       "question": "Dad is going into residential aged care and I am his power of attorney.",
       "expect": [
-        "aged care means assessment"
+        "Aged care calculation of your cost of care"
       ],
       "optional": [
         "Nominees"
@@ -403,7 +403,7 @@
       "type": "answer",
       "question": "My partner moved in with me three weeks ago.",
       "expect": [
-        "member of a couple"
+        "relationship status"
       ],
       "optional": [],
       "shape": "single",

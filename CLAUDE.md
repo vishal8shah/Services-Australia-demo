@@ -17,9 +17,9 @@ including defects the eval suite caught. Add to it rather than rediscovering the
 ```bash
 make check     # Python 3.11+ and sqlite FTS5, runs before every other target
 make doctor    # which keys and providers actually work, run this first
-make test      # 74 unit tests, offline, nothing to install
+make test      # 99 unit tests, offline, nothing to install
 make eval      # golden suite on the synthetic fixture corpus
-make measure   # Day 0: is crawling permitted, how many pages, which branches
+make measure   # Day 0: is crawling permitted, how many pages, which families
 make crawl     # fetch the corpus, honours the declared crawl delay
 make index     # chunk and embed
 make serve     # API and the single page on http://127.0.0.1:8000
@@ -58,21 +58,22 @@ make serve     # API and the single page on http://127.0.0.1:8000
 
 ## Where things stand
 
-Pipeline complete and tested end to end. Day 0 has not been run: the environment
-this was built in cannot reach servicesaustralia.gov.au, so every number in
-`evals/runs/` comes from the synthetic corpus and measures the harness, not the
-product.
+Days 0 and 1 are done (2026-09-17/18). The site dropped its /individuals/ section, so
+scope is by payment family and page type (`saal/ingest/scope.py`, D14, D17): 379
+pages, 1,805 chunks, OpenAI embeddings. `make trace` anchors 29 of 31 golden items.
+The latest real scorecard is `evals/runs/2026-09-18-091008` (D21): every safety gate
+passes; payment recall 0.76, compound recall 0.67, faithfulness 0.93 and median
+latency 11.2s are still below their gates. The interface (`web/index.html`) takes
+voice or text in 24 languages and shows retrieval progress from `/api/plan` (D20).
+A recorded, static copy of it is published with GitHub Pages (D22, D23).
 
 **Next step, in order:**
 
-1. `make doctor` with a key in `.env`.
-2. `make measure`, then write the four TBD values into the Day 0 appendix of
-   `PROTOTYPE_PLAN.md`. The real page count decides full corpus or three branches.
-3. `make crawl && make index`.
-4. Day 1 proper: `make trace` looks up each expected answer in the crawled corpus
-   and reports which ones it can anchor to a real chunk id. `python3 -m evals.trace
-   --write` fills in the unambiguous ones. Everything it flags needs your
-   judgement: either the expected family is wrong, the corpus scope is too narrow,
-   or retrieval is failing, and which of the three it is matters. The answer key
-   comes from the corpus, never from the model and never from memory.
-5. `make eval-real`, and commit the first scorecard that means something.
+1. Family Tax Benefit on family questions (F1, F3, F4): the largest remaining recall
+   gap, and it varies run to run with the expander's phrases (D21). Measure expander
+   variance first; never lower the floor.
+2. Golden items D2 and B2 expect topics ("compensation", "relationship status") that
+   the payments list cannot hold. Decide with the owner whether the suite or the
+   contract changes.
+3. Latency to the 6s gate: synthesis output length is now the cost, not thinking.
+4. Recrawl on a schedule; disaster event pages open and close (D17).
