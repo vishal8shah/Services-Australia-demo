@@ -23,8 +23,8 @@ government payments apply, with the official page and its date behind every line
 
 - Recorded demo, public, runs in any browser: https://vishal8shah.github.io/payment-finder/
 - Deck: https://vishal8shah.github.io/payment-finder/deck.html
-- Repository: https://github.com/vishal8shah/Services-Australia-demo (it must be public
-  for reviewers to open it). A repo lets people run the live version.
+- Repository, public: https://github.com/vishal8shah/Services-Australia-demo (code,
+  eval suite, every scorecard pass or fail, and the decision log D1 to D23)
 
 **Screenshots or video (optional, recommended)**
 
@@ -71,6 +71,14 @@ Claude is in the product and built it.
 - Fonts: Schibsted Grotesk, Source Serif 4 and IBM Plex Mono via Google Fonts, under
   the SIL Open Font License.
 - No people, faces or voices appear in the materials. No personal data is collected.
+
+**Suggested caption, if a short post helps**
+
+Australia is one of the most multilingual countries on earth, and the government's
+payment pages are written in English, organised by payment name. Payment Finder lets
+you describe your situation out loud, in your own language, and shows which payments
+apply, with the official page and its date behind every line. It refuses rather than
+guesses: no amounts, no claim status, no personal data. Built with Claude.
 
 **Preferred attribution**
 

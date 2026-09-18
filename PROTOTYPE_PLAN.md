@@ -6,7 +6,7 @@
 | **Branch** | `claude/services-australia-answer-layer-m1u13i` |
 | **Plan date** | 16 September 2026 |
 | **Build window** | 5 focused days plus a 2 hour Day 0 |
-| **Status** | Plan approved for build, Day 0 not yet run |
+| **Status** | Days 0 and 1 done on the real site, 18 September 2026. Current state: README "Status"; every decision since: `docs/decisions.md` |
 
 ---
 
@@ -79,7 +79,7 @@ flowchart TD
 | Embedding provider | Pluggable: `hashing` offline, or `openai`, `gemini` free tier, `local` model, `voyage` | The offline one bridges spelling, never meaning, and the scorecard shows exactly what that costs |
 | Query expansion | One small call, optional, same key as synthesis | Cheaper than an embedding provider and it needs no second account |
 | Model access | OpenAI or Anthropic, one shared transport, every model name overridable | Model names get retired, and a hard coded one is a demo that stops working on someone else's schedule |
-| Synthesis | OpenAI or Claude, strict JSON output, temperature 0, behind a provider interface | Contract enforcement matters more than prose quality, and the interface lets the suite run offline against a deterministic stub |
+| Synthesis | OpenAI or Claude, strict JSON output, temperature 0 where the model accepts it (Claude Sonnet 5 does not, D13), behind a provider interface | Contract enforcement matters more than prose quality, and the interface lets the suite run offline against a deterministic stub |
 | API | `http.server`, one module | A framework would be the only dependency in the project, to serve two endpoints |
 | UI | One static page, vanilla JS, Australian Government Design System tokens | Familiar visual language, zero build step |
 | Deploy | Single container, or static demo mode behind a flag | See section 9 |

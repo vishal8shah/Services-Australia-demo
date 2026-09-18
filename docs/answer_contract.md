@@ -61,7 +61,7 @@ Runs after generation, in code. Prompt instructions are not a control.
 | 2 | Every eligibility signal and every next action carries at least one source id | Refuse |
 | 3 | Every `payments[].name` appears verbatim in at least one chunk cited by that payment, matched against the chunk's title, heading path and text | Refuse |
 | 4 | Every url in `next_actions` matches the url of a cited source | Strip the url, keep the action |
-| 5 | Response parses against the schema | Retry once at temperature 0, then refuse |
+| 5 | Response parses against the schema | Retry once, then refuse |
 | 6 | No dollar figure, wait time, or processing time appears anywhere in the output | Strip the sentence, add to `not_answered` |
 
 Rule 3 is the one that does most of the work: the model cannot introduce a payment the corpus never mentioned. Rule 6 is a regex on the output, deliberately blunt, because the cost of a wrong rate quoted to someone in financial stress is not symmetric with the cost of a stripped sentence.
