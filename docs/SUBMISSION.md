@@ -21,12 +21,10 @@ government payments apply, with the official page and its date behind every line
 
 **Link to the build**
 
-- Recorded demo, runs in the browser: https://claude.ai/artifact/SmdsZvp21WjojQWsTba88c
-  (share it from the artifact's share menu first; artifacts are private by default)
-- Deck: https://claude.ai/artifact/VRbuUtbxgHdMuoCXyHUFbr
-- Repository: https://github.com/vishal8shah/Services-Australia-demo (push today's
-  changes first; this folder is a downloaded copy and not yet a git checkout). A repo
-  lets people run the live version.
+- Recorded demo, public, runs in any browser: https://vishal8shah.github.io/payment-finder/
+- Deck: https://vishal8shah.github.io/payment-finder/deck.html
+- Repository: https://github.com/vishal8shah/Services-Australia-demo (it must be public
+  for reviewers to open it). A repo lets people run the live version.
 
 **Screenshots or video (optional, recommended)**
 

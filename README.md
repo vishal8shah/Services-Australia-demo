@@ -22,8 +22,8 @@ your own circumstances, use myGov or call Services Australia.
 - **Watch it work.** Within a few seconds the page shows how your sentence was split up,
   the English search phrases it used, and the dated official pages it found, while the
   answer is written and checked.
-- **Recorded demo:** https://claude.ai/artifact/SmdsZvp21WjojQWsTba88c
-- **Deck:** https://claude.ai/artifact/VRbuUtbxgHdMuoCXyHUFbr
+- **Recorded demo, open it now:** https://vishal8shah.github.io/payment-finder/
+- **Deck:** https://vishal8shah.github.io/payment-finder/deck.html
 - **Latest real scorecard:** `evals/runs/2026-09-18-091008.md`. 0 fabricated payments,
   100% refusal precision, faithfulness 0.93, and the gates it still fails, stated plainly.
 

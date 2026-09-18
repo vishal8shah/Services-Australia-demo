@@ -436,3 +436,13 @@ from the pipeline for the eight example chips, and says so in its notice bar.
 Recordings live outside the repository (rule 4). Two of eight were re-recorded once
 because the first run missed a payment the second found (Vietnamese Scenario A,
 Chinese flood); that selection is disclosed here rather than hidden.
+
+## D23. Published with GitHub Pages, from a separate repository
+
+The recorded demo and the deck are served from `vishal8shah/payment-finder`
+(https://vishal8shah.github.io/payment-finder/), not from this repository. The recordings are model answers derived
+from live Services Australia pages, and rule 4 keeps live content out of this repo;
+a separate site repository keeps that line clean while still giving a public URL.
+A normal web page, unlike an artifact viewer, can ask for the microphone, so voice
+input works on the published demo. The site is rebuilt from `web/index.html` and
+`docs/deck.html` plus the recordings; the builder lives outside the repo with them.
