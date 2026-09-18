@@ -5,8 +5,8 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-GOLDEN = json.loads((ROOT / "evals" / "golden.json").read_text())
-MARKDOWN = (ROOT / "evals" / "golden_questions.md").read_text()
+GOLDEN = json.loads((ROOT / "evals" / "golden.json").read_text(encoding="utf-8"))
+MARKDOWN = (ROOT / "evals" / "golden_questions.md").read_text(encoding="utf-8")
 ROW_ID = re.compile(r"^\|\s*([A-Z]{1,2}\d+)\s*\|", re.M)
 
 

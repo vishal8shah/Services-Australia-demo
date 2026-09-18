@@ -56,7 +56,8 @@ class ApiProvider:
         user = build_user_message(question, facets, hits, language)
         try:
             text = chat(SYSTEM, user, provider=self.provider, model=self.model,
-                        max_tokens=2000, json_mode=True)
+                        max_tokens=16000, json_mode=True,
+                        effort=config.SYNTH_EFFORT if self.provider == "anthropic" else None)
             parsed = parse_json(text)
         except LLMError as exc:
             raise ProviderError(str(exc)) from exc
@@ -154,7 +155,7 @@ class FixtureProvider:
 
     def __init__(self, path: Path | str | None = None) -> None:
         self.path = Path(path or config.ROOT / "evals" / "fixtures" / "llm.json")
-        self.data = json.loads(self.path.read_text()) if self.path.exists() else {}
+        self.data = json.loads(self.path.read_text(encoding="utf-8")) if self.path.exists() else {}
 
     @staticmethod
     def key(question: str) -> str:
@@ -178,13 +179,13 @@ class RecordingProvider:
         self.inner = inner
         self.name = f"recording:{inner.name}"
         self.path = Path(path or config.ROOT / "evals" / "fixtures" / "llm.json")
-        self.data = json.loads(self.path.read_text()) if self.path.exists() else {}
+        self.data = json.loads(self.path.read_text(encoding="utf-8")) if self.path.exists() else {}
 
     def answer(self, question, facets, hits, language="en") -> dict:
         out = self.inner.answer(question, facets, hits, language)
         self.data[FixtureProvider.key(question)] = out
         self.path.parent.mkdir(parents=True, exist_ok=True)
-        self.path.write_text(json.dumps(self.data, indent=2, sort_keys=True))
+        self.path.write_text(json.dumps(self.data, indent=2, sort_keys=True), encoding="utf-8")
         return out
 
 

@@ -35,7 +35,8 @@ def api_key(provider: str) -> str:
 
 
 def chat(system: str, user: str, *, provider: str | None = None, model: str | None = None,
-         max_tokens: int = 2000, json_mode: bool = True, timeout: int = 120) -> str:
+         max_tokens: int = 2000, json_mode: bool = True, timeout: int = 120,
+         effort: str | None = None) -> str:
     """Send one turn, return the text. Raises LLMError with the provider's own message."""
     provider = provider or config.LLM_PROVIDER
     model = model or config.model_for(provider)
@@ -43,8 +44,14 @@ def chat(system: str, user: str, *, provider: str | None = None, model: str | No
 
     if provider == "anthropic":
         url = f"{config.ANTHROPIC_BASE.rstrip('/')}/v1/messages"
-        body = {"model": model, "max_tokens": max_tokens, "temperature": 0,
+        # No temperature: newer models (claude-sonnet-5) reject it with a 400,
+        # and the OpenAI branch already leaves it at the provider default.
+        body = {"model": model, "max_tokens": max_tokens,
                 "system": system, "messages": [{"role": "user", "content": user}]}
+        if effort:
+            # Sonnet 5 thinks adaptively by default; effort sets how much. Haiku
+            # 4.5 rejects the field, so only callers on a newer model pass it.
+            body["output_config"] = {"effort": effort}
         headers = {"x-api-key": key, "anthropic-version": "2023-06-01",
                    "content-type": "application/json"}
     elif provider == "openai":
@@ -74,7 +81,17 @@ def chat(system: str, user: str, *, provider: str | None = None, model: str | No
         raise LLMError(f"{provider} unreachable: {exc.reason}") from exc
 
     if provider == "anthropic":
-        return "".join(b.get("text", "") for b in payload.get("content", []))
+        text = "".join(b.get("text", "") for b in payload.get("content", [])
+                       if b.get("type") == "text")
+        stop = payload.get("stop_reason")
+        # claude-sonnet-5 thinks by default and spends output tokens before the
+        # first text block. Out of room mid thought returns no text at all, which
+        # used to surface downstream as "no JSON in model output: ''". See D18.
+        if stop == "refusal":
+            raise LLMError(f"anthropic refused: {payload.get('stop_details')}")
+        if stop == "max_tokens" and not text.strip():
+            raise LLMError(f"anthropic hit max_tokens={max_tokens} before writing any text")
+        return text
     choices = payload.get("choices") or []
     if not choices:
         raise LLMError(f"openai returned no choices: {str(payload)[:200]}")

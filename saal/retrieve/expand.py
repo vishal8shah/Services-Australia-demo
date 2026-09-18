@@ -24,9 +24,13 @@ from ..llm import LLMError, api_key, chat, parse_json
 
 SYSTEM = """You rewrite a person's situation into the vocabulary used on Australian government payment pages, so a search engine can find the right pages.
 
-Return JSON: an array of at most 5 short search phrases, and nothing else. Each phrase is 2 to 5 words. Prefer the words the pages themselves would use: "constant care", "care receiver", "income test", "looking for work", "activity test", "principal carer", "residence rules".
+The pages cover these payments and cards, by these exact names: JobSeeker Payment, Youth Allowance, Austudy, ABSTUDY, Assistance for Isolated Children, Special Benefit, Work Bonus, Rent Assistance, Family Tax Benefit, Parenting Payment, Parental Leave Pay, Newborn Upfront Payment, Child Care Subsidy, Child Support, Carer Payment, Carer Allowance, Carer Supplement, Child Disability Assistance Payment, Age Pension, Commonwealth Seniors Health Card, Pensioner Concession Card, Disability Support Pension, Mobility Allowance, Low Income Health Care Card, Health Care Card, Pension Bonus Bereavement Payment, Crisis Payment, Disaster Recovery Payment, Disaster Recovery Allowance. A situation often involves more than one: think about each part of it separately, and include the name of every payment above that a person in that situation would commonly look at.
 
-Do not answer the question. Do not explain. Do not include the person's own wording back. If the situation is already stated in official vocabulary, return an empty array."""
+Return JSON: an array of at most 6 short search phrases, and nothing else. Each phrase is 2 to 5 words. Prefer the words the pages themselves would use: "constant care", "care receiver", "income test", "looking for work", "activity test", "principal carer", "residence rules".
+
+The person may write in any language. The pages are in English, so every phrase you return must be in English, whatever language the situation is written in.
+
+Do not answer the question. Do not explain. Do not include the person's own wording back. If the situation is already stated in official English vocabulary, return an empty array."""
 
 class Expander(Protocol):
     name: str
@@ -63,7 +67,7 @@ class ApiExpander:
             # Expansion is an optimisation. Losing it degrades retrieval, and
             # failing the whole question because of it would be worse.
             return []
-        return [p.strip() for p in phrases if isinstance(p, str) and p.strip()][:5]
+        return [p.strip() for p in phrases if isinstance(p, str) and p.strip()][:6]
 
 
 def get_expander(name: str | None = None) -> Expander:

@@ -13,6 +13,23 @@ Not affiliated with Services Australia or the Commonwealth. Content is sourced f
 public pages, Commonwealth of Australia, reused under CC BY 4.0. For anything about
 your own circumstances, use myGov or call Services Australia.
 
+## See it
+
+- **Speak or type in 24 languages.** Tap the mic, describe your situation in Vietnamese,
+  Arabic, Punjabi, Mandarin or English; the answer comes back in that language, with
+  payment names kept in English so they can be searched and recognised. Read aloud
+  is one tap.
+- **Watch it work.** Within a few seconds the page shows how your sentence was split up,
+  the English search phrases it used, and the dated official pages it found, while the
+  answer is written and checked.
+- **Recorded demo:** https://claude.ai/artifact/SmdsZvp21WjojQWsTba88c
+- **Deck:** https://claude.ai/artifact/VRbuUtbxgHdMuoCXyHUFbr
+- **Latest real scorecard:** `evals/runs/2026-09-18-091008.md`. 0 fabricated payments,
+  100% refusal precision, faithfulness 0.93, and the gates it still fails, stated plainly.
+
+Run it: `make crawl && make index && make serve`, then open http://127.0.0.1:8000.
+On Windows without make: `py -m saal.api.main`.
+
 ---
 
 ## Work on it locally
@@ -54,7 +71,7 @@ measure the harness, not the product.
 ## Build the real corpus
 
 ```bash
-make measure                    # Day 0: robots, sitemap, page count by branch
+make measure                    # Day 0: robots, sitemap, page count by family
 make crawl                      # polite crawl, honours the declared crawl delay
 make index                      # chunk and embed
 make eval-real                  # the suite against the crawled corpus

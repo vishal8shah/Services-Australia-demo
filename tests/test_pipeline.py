@@ -136,3 +136,34 @@ class TestExpansion(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestPlan(unittest.TestCase):
+    """The fast half the interface shows while the answer is written."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.conn = fixture_conn()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.conn.close()
+
+    def test_plan_lists_the_pages_found_without_writing_an_answer(self):
+        out = pipeline.plan("What is the difference between Carer Payment and Carer Allowance?",
+                            conn=self.conn)
+        self.assertIsNone(out["refusal"])
+        self.assertTrue(out["pages"])
+        self.assertNotIn("payments", out)
+        for page in out["pages"]:
+            self.assertIn("page_last_updated", page)
+
+    def test_an_identifier_stops_the_plan_before_retrieval(self):
+        out = pipeline.plan("My CRN is 123 456 789A, what can I claim?", conn=self.conn)
+        self.assertEqual(out["refusal"]["class"], "pii_detected")
+        self.assertEqual(out["pages"], [])
+
+    def test_a_speech_language_code_sets_direction(self):
+        out = pipeline.plan("How much will I get?", conn=self.conn, language="ar-AU")
+        self.assertEqual(out["language"], "ar")
+        self.assertTrue(out["rtl"])

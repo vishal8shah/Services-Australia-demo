@@ -74,6 +74,24 @@ def lexical_search(conn, query: str, limit: int) -> list[tuple[str, float]]:
     return [(r["chunk_id"], _norm_bm25(r["rank"], best)) for r in rows]
 
 
+def title_search(conn, query: str, limit: int = 6) -> list[tuple[str, float]]:
+    """Known item lookup: a query that is exactly a page title, or "Who can get" it.
+
+    "Carer Payment" appears in fourteen page titles, so BM25 ranked the page that
+    says who it is for 25th. When the person, or the expander, names a payment
+    exactly, its own page and its eligibility page are the answer to look at first.
+    Returns [] for anything that is not an exact title, which is almost everything.
+    """
+    q = re.sub(r"\s+", " ", query).strip().lower()
+    if not q or len(q) > 80:
+        return []
+    rows = conn.execute(
+        "SELECT chunk_id FROM chunks WHERE lower(title) = ? OR lower(title) = ? "
+        "ORDER BY (lower(title) = ?) DESC, ordinal LIMIT ?",
+        (q, f"who can get {q}", f"who can get {q}", limit)).fetchall()
+    return [(r["chunk_id"], 1.0) for r in rows]
+
+
 def _norm_bm25(rank: float, best: float) -> float:
     """Map bm25 onto 0 to 1 against the best hit for this query, saturating."""
     if best == 0:
@@ -205,6 +223,12 @@ def search(conn, query: str, facets: list[str] | None = None,
     origin: dict[str, set[str]] = {}
 
     for q, weight in zip(queries, weights_by_query):
+        named = title_search(conn, q)
+        if named:
+            rankings.append(named)
+            weights.append(weight)
+            for cid, _ in named:
+                origin.setdefault(cid, set()).add(q)
         lex = lexical_search(conn, q, config.CANDIDATES)
         vec, median = vector_search(conn, q, config.VECTOR_CANDIDATES, embedder=embedder)
         rankings.extend([lex, vec])
@@ -221,8 +245,9 @@ def search(conn, query: str, facets: list[str] | None = None,
             origin.setdefault(cid, set()).add(q)
 
     fused = rrf(rankings, config.RRF_K, weights)
-    ordered = sorted(fused.items(), key=lambda x: x[1], reverse=True)[:top_k]
-    chunks = store.get_chunks(conn, [cid for cid, _ in ordered])
+    pool = sorted(fused.items(), key=lambda x: x[1], reverse=True)[:config.CANDIDATES]
+    chunks = store.get_chunks(conn, [cid for cid, _ in pool])
+    ordered = _rerank(pool, chunks, top_k)
     # Coverage weighting is not the fusion weighting. A facet is the person's own
     # words, so evidence found through it counts in full; only an expansion is
     # second hand and gets discounted. The fusion weight exists to stop facets
@@ -246,6 +271,59 @@ def search(conn, query: str, facets: list[str] | None = None,
             facets=sorted(origin.get(cid, set())),
         ))
     return hits
+
+
+# Pages that apply a rule to a payment someone already has, rather than saying who a
+# payment is for. There is one per payment ("Assets test for Age Pension", "...for
+# Carer Payment", "...for Disability Support Pension"), so a question that mentions
+# assets or a change retrieves six near identical pages and the page that answers
+# "what can I get" never makes the top eight. D20.
+GENERIC_PAGE = re.compile(
+    r"^(income test|assets test|income and assets tests?|change (of|in) circumstances|"
+    r"residence rules|how to manage|how to report|travel outside australia|"
+    r"while you wait|when you['’]?ll get|how we pay|what can affect|you own your own home)", re.I)
+# The pages that answer "what is this and who is it for": a payment's own landing
+# page and its "Who can get" page. A person asking what applies to them needs these
+# first, and they were losing to the rule pages above on every compound question.
+PRIMARY_PAGE = re.compile(r"^who can get\b", re.I)
+PAYMENT_WORD = re.compile(r"\b(payment|allowance|pension|benefit|subsidy|card|pay|supplement|"
+                          r"abstudy|austudy|assistance)\b", re.I)
+
+
+def page_prior(chunk: store.Chunk) -> float:
+    """A ranking prior only. Confidence, and so the refusal floor, never see it."""
+    title = (chunk.title or "").strip()
+    if GENERIC_PAGE.match(title):
+        return config.GENERIC_PAGE_WEIGHT
+    if re.search(r"\b20\d\d\b", title):
+        return 1.0  # a dated disaster event page is primary only for that event
+    if PRIMARY_PAGE.match(title):
+        return config.PRIMARY_PAGE_WEIGHT
+    # A landing page is titled with the payment's name alone.
+    if len(title.split()) <= 6 and PAYMENT_WORD.search(title) and not re.match(r"^(how|what|when|why)\b", title, re.I):
+        return config.PRIMARY_PAGE_WEIGHT
+    return 1.0
+
+
+def _rerank(pool: list[tuple[str, float]], chunks: dict, top_k: int) -> list[tuple[str, float]]:
+    """Apply the page prior, then keep at most PER_PAGE chunks from any one page.
+
+    The cap is what leaves room for the second payment in a compound question: a
+    long page otherwise fills the top eight with its own sections.
+    """
+    scored = sorted(((cid, s * page_prior(chunks[cid])) for cid, s in pool if cid in chunks),
+                    key=lambda x: x[1], reverse=True)
+    per_page: dict[str, int] = {}
+    out = []
+    for cid, s in scored:
+        url = chunks[cid].url
+        if per_page.get(url, 0) >= config.PER_PAGE:
+            continue
+        per_page[url] = per_page.get(url, 0) + 1
+        out.append((cid, s))
+        if len(out) == top_k:
+            break
+    return out
 
 
 def confidence_of(hits: list[Hit]) -> float:

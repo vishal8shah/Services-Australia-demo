@@ -59,6 +59,26 @@ class TestChat(unittest.TestCase):
         self.assertEqual(captured["body"]["system"], "sys")
         self.assertEqual(text, '{"payments": []}')
 
+    def test_anthropic_thinking_blocks_are_skipped_and_temperature_is_not_sent(self):
+        reply = {"stop_reason": "end_turn", "content": [
+            {"type": "thinking", "thinking": "", "signature": "x"},
+            {"type": "text", "text": '{"payments": []}'}]}
+        captured = {}
+        with mock.patch.dict("os.environ", KEYS, clear=False), \
+             mock.patch("urllib.request.urlopen", fake_urlopen(reply, captured)):
+            text = llm.chat("sys", "user", provider="anthropic", model="claude-test")
+        self.assertEqual(text, '{"payments": []}')
+        self.assertNotIn("temperature", captured["body"])
+
+    def test_anthropic_out_of_room_while_thinking_is_named(self):
+        reply = {"stop_reason": "max_tokens", "content": [
+            {"type": "thinking", "thinking": "", "signature": "x"}]}
+        with mock.patch.dict("os.environ", KEYS, clear=False), \
+             mock.patch("urllib.request.urlopen", fake_urlopen(reply, {})):
+            with self.assertRaises(llm.LLMError) as ctx:
+                llm.chat("sys", "user", provider="anthropic", model="claude-test", max_tokens=50)
+        self.assertIn("max_tokens=50", str(ctx.exception))
+
     def test_json_mode_off_omits_the_response_format(self):
         captured = {}
         with mock.patch.dict("os.environ", KEYS, clear=False), \
@@ -155,7 +175,11 @@ class TestDoctor(unittest.TestCase):
     def test_a_working_setup_reports_success(self):
         from saal import doctor
 
+        # A real corpus on disk, embedded by another provider, is a genuine doctor
+        # failure; this test is about the provider checks, so it points at no corpus.
+        from pathlib import Path
         with mock.patch.dict("os.environ", KEYS, clear=False), \
              mock.patch("saal.config.LLM_PROVIDER", "openai"), \
+             mock.patch("saal.config.DB_PATH", Path("does-not-exist/corpus.db")), \
              mock.patch("saal.doctor.chat", return_value='{"ok": true}'):
             self.assertEqual(doctor.main(), 0)

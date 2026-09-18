@@ -39,6 +39,20 @@ class TestExtract(unittest.TestCase):
         html = PAGE.replace('<meta name="dcterms.modified" content="2026-07-14T10:00:00Z">', "")
         self.assertEqual(extract(html, "https://x/a").page_last_updated, "2026-07-14")
 
+    def test_a_generic_h1_does_not_become_the_title(self):
+        """Live site shape: the h1 of a payment subpage does not name the payment."""
+        html = ("<html><head><title>Who can get JobSeeker Payment - JobSeeker Payment - "
+                "Services Australia</title></head><body><h1>Who can get it</h1>"
+                "<p>You need to meet some rules to get JobSeeker Payment.</p></body></html>")
+        self.assertEqual(extract(html, "https://x/a").title, "Who can get JobSeeker Payment")
+        og = html.replace("</head>", '<meta property="og:title" content="Who can get JobSeeker Payment (JSP)"></head>')
+        self.assertEqual(extract(og, "https://x/a").title, "Who can get JobSeeker Payment (JSP)")
+
+    def test_the_audio_player_label_is_boilerplate(self):
+        html = "<html><body><h1>A</h1><p>Listen</p><p>Real content sits here.</p></body></html>"
+        blob = "\n".join(s.text for s in extract(html, "https://x/a").sections)
+        self.assertNotIn("Listen", blob)
+
     def test_missing_date_is_none(self):
         html = "<html><body><h1>A</h1><p>Some text here.</p></body></html>"
         self.assertIsNone(extract(html, "https://x/a").page_last_updated)

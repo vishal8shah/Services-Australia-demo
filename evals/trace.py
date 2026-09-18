@@ -87,7 +87,7 @@ def main(argv: list[str] | None = None) -> int:
                     help="write the traced chunk ids back into golden.json")
     args = ap.parse_args(argv)
 
-    doc = json.loads(GOLDEN.read_text())
+    doc = json.loads(GOLDEN.read_text(encoding="utf-8"))
     items = [i for i in doc["items"] if i["type"] == "answer"]
     if args.only:
         wanted = {i.strip().upper() for i in args.only.split(",")}
@@ -131,7 +131,7 @@ def main(argv: list[str] | None = None) -> int:
         print()
 
     if args.write:
-        GOLDEN.write_text(json.dumps(doc, indent=2))
+        GOLDEN.write_text(json.dumps(doc, indent=2), encoding="utf-8")
         print(f"wrote chunk ids for {filled} items into {GOLDEN.relative_to(ROOT)}")
 
     if needs_eyes:

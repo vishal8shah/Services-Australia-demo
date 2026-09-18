@@ -207,3 +207,232 @@ no expansion is a working configuration by every per role check, and answers not
 a person actually asks. That pairing now prints a warning naming the consequence,
 because a setup that looks green and refuses every real question is the worst of the
 available failure modes.
+
+## D13. Two defects the first real key found
+
+**No temperature on Anthropic calls.** `claude-sonnet-5` rejects `temperature` with
+a 400, so synthesis failed in `make doctor` while expansion on Haiku passed. The
+transport now sends no temperature to either provider, matching the OpenAI branch.
+Contract rule 5 is unchanged in substance: one retry, then refuse.
+
+**The test suite never reads `.env`.** The loader ran on import, so the moment a
+`.env` set `SAAL_EXPANDER=anthropic` the offline suite started calling the API,
+took 109 seconds instead of one, and failed the test that proves the default stack
+refuses without expansion. `config` now skips env files when `unittest` is loaded.
+Shell exports still apply, per D11. Found by running `make test` after `make doctor`
+on a clone with a real key, which is exactly the order CLAUDE.md prescribes.
+
+## D14. Scope by payment family and page type, because the branches are gone
+
+**Context.** Day 0 found the site restructured. There is no `/individuals/` path any
+more: all 4,304 sitemap urls sit at the root, mixing payment pages with forms
+(`sa391`), audio translations, provider and lawyer guidance, statistics, and dated
+disaster events. The prefix filter scoped 0 pages.
+
+**Chosen.** `saal/ingest/scope.py` admits a url when its slug names a payment the
+golden suite asks about *and* starts with a standard page type (`who-can-get-`,
+`how-much-`, `how-to-claim-`, income and residence rules, ...), or is exactly that
+payment's landing page. Cross cutting topics with no payment name (nominees, proof of
+identity, compensation, relationship status, aged care cost, evergreen disaster
+support) are listed by exact slug. Audience and format words (`translation`,
+`providers`, `professionals`, ...) exclude first. Result: 296 pages, about 49 minutes
+at the declared 10 second delay. `--branches` became `--families`.
+
+**Rejected.** Payment name alone admitted 1,081 pages, most of them long tail an
+answer should never cite. The full sitemap is 12 hours of crawling for mostly out of
+corpus content. Dated disaster event pages (`vic-bushfires-jan-2026-dra`) are left out
+on purpose: they expire, and a corpus that cites a closed event is worse than one that
+refuses.
+
+**Known gap for Day 1.** No evergreen page is named for Disaster Recovery Payment or
+Disaster Recovery Allowance; those live only on per event pages now. `make trace` will
+flag them, and the answer is a scope or golden suite decision, not a retrieval fix.
+
+## D15. Every file read and write names its encoding
+
+`read_text()` and `write_text()` without an encoding use the platform default, which
+is cp1252 on Windows. The crawler writes raw HTML and the eval runner writes
+scorecards containing the golden suite's non English questions, so the first page
+or question outside cp1252 would have crashed a crawl or a run partway through. It
+never showed on macOS or Linux, where the default is already UTF-8. Every
+`read_text`, `write_text` and file read in `saal/`, `evals/` and `tests/` now passes
+`encoding="utf-8"`.
+
+## D16. A page's title comes from og:title, not its h1
+
+**Found by `make trace` on the first real corpus.** 20 of 31 golden items could not
+be anchored, and the chunks retrieved in their place were titled "Who can get it",
+"How to claim", "How much you can get". About 190 of the 296 pages have an h1 that
+does not name the payment it belongs to; the payment is only in `og:title` and the
+document title ("Who can get JobSeeker Payment - JobSeeker Payment - Services
+Australia"). The extractor preferred the h1, so most chunks were anonymous to
+retrieval: FTS indexes the title, and the title said nothing.
+
+**Chosen.** Title order is `og:title`, then the first segment of `<title>` split on
+` | ` or ` - `, then the h1. Separately, the audio player's "Listen" label had become a
+chunk of its own on every page (294 of them); it is now boilerplate. Corpus went from
+1,684 chunks to 1,390, and traced items from 11 to 19 with no change to the floor,
+the validator or the golden suite.
+
+## D17. Day 1 judgement calls on the 12 untraced items
+
+Decided with the owner after D16 left 12 of 31 golden items without an anchor.
+
+**Expected name was wrong: A2, B2.** The site no longer uses the words the suite
+expected. "aged care means assessment" appears in no chunk; the page is "Aged care
+calculation of your cost of care". "member of a couple" survives only in body text; the
+page is "Updating your relationship status". Both expectations now use the site's own
+title wording, in `golden.json` and `golden_questions.md` together. The answer key
+comes from the corpus, per CLAUDE.md.
+
+**Scope was too narrow: X2.** Disaster Recovery Payment and Allowance exist only as
+per event pages. D14 left those out because they expire; the owner chose to include
+them. `scope.py` admits slugs ending in a payment code (`agdrp`, `dra`, `drp`) and
+event landing pages named for a disaster and a month and year: 83 pages across five
+events. They must be recrawled as events open and close, or the corpus will cite
+closed claims.
+
+**Retrieval was failing: C1, F1, F2, F3, F4, D1, S1, A4, X4.** Every expected payment
+here is in the corpus. The offline embedder matches spelling, and near identical
+"Change of circumstances for X" pages crowded out the right one on situation and
+compound questions. `SAAL_EMBED_PROVIDER=openai` (text-embedding-3-small, 512
+dimensions) replaces it. Not changed: the score floor, the validator, the fusion
+weights. If semantic retrieval does not close these, the next suspect is the
+generic page type pages, not the floor.
+
+## D18. Two defects the first live demo found
+
+**The server hung on the first browser visit.** `http.server.HTTPServer` handles one
+connection at a time, and Chromium opens speculative preconnect sockets that send
+nothing. The server waited on one of those forever and every real request queued
+behind it. It is now `ThreadingHTTPServer`; the single sqlite connection is shared
+across worker threads behind a lock (`check_same_thread=False`), so requests take
+turns on the corpus and an idle socket blocks nobody.
+
+**Every live answer refused with "no JSON in model output: ''".** `claude-sonnet-5`
+runs adaptive thinking by default, and thinking spends output tokens before the first
+text block. Synthesis allowed 2,000; a probe used 1,677 of them, 501 on thinking,
+and a real query with more context ran out mid thought and returned no text. The
+validator then refused, correctly. Synthesis now allows 16,000, the transport reads
+only `text` blocks, and it raises a named error on `stop_reason` `max_tokens` with no
+text or on `refusal`, instead of passing an empty string along. Scenario A now
+answers with Carer Payment and Carer Allowance and three dated sources, in about 22
+seconds, most of it thinking.
+
+## D19. The first real scorecard: 2026-09-18-070947, fails 4 of 7 gates
+
+Real corpus (379 pages, 1,805 chunks, openai:512), Claude for synthesis, expansion
+and the judge. Recorded as it came out, per CLAUDE.md rule 6.
+
+| gate | value | gate | |
+|---|---|---|---|
+| payment_recall | 0.74 | 0.90 | fail |
+| compound_recall | 0.58 | 0.80 | fail |
+| citation_faithfulness | 0.84 | 1.00 | fail |
+| fabricated_payment_rate | 0.00 | 0.00 | pass |
+| refusal_precision | 1.00 | 1.00 | pass |
+| over_refusal_rate | 0.00 | 0.05 | pass |
+| latency_p50_s | 25.7 | 6.0 | fail |
+
+**What held.** Every safety gate: no invented payment, all eight refusal probes
+refused with the right class, no answerable question refused.
+
+**Recall.** 10 of 31 answer items fail. Six are the second payment of a compound
+question that trace had already flagged (Family Tax Benefit in F1, F3, F4; Child Care
+Subsidy in F2; Commonwealth Seniors Health Card in A4 behind "Assets test for X"
+pages; Carer Allowance in C1). C1 also returned no payments at all after 90 seconds
+without refusing, where the same question answered correctly in the demo the day
+before: a non determinism to chase. D1, D2, A3, B2 are synthesis choosing a
+neighbouring payment over the expected one.
+
+**Faithfulness.** Three causes, not one. Real synthesis faults: a one liner reading
+"A payment mentioned in these chunks that has...", and Mobility Allowance offered
+for reduced work hours. Judge shape: each claim is judged against each cited chunk
+separately, so a claim that three chunks support together fails three times.
+Procedural next actions ("Check the full eligibility rules") are judged as factual
+claims. The judge rubric is a scoring decision for the owner; it has not been changed.
+
+**Latency.** Median 25.7s against a 6s gate, most of it Sonnet 5's default adaptive
+thinking on synthesis. `output_config.effort` is the lever to measure next.
+
+## D20. Owner delegated the D19 calls: judge together, low effort, rank by page type
+
+The owner asked for best judgement, aimed at a live hackathon demo. Chosen:
+
+**Judge claims against their cited chunks together.** Contract rule 1 says every claim
+maps to the retrieved set; it never required each chunk alone to carry the whole
+claim. One verdict per claim over all its cited chunks, and "open the page" next
+actions count as supported when that page is cited. Faithfulness rose 0.84 to 0.89
+on the intermediate run.
+
+**`output_config.effort: low` on synthesis** (`SAAL_SYNTH_EFFORT`). Measured on W2 and
+W3: low returned as many or more payments than the model default, in 8 to 10s
+against 12 to 15s. Correctness is enforced by the validator in code, not by thinking.
+
+**Retrieval, ranking only, confidence untouched:**
+- *Expander grounded in the corpus.* It now gets the list of payment names in scope
+  and may name any that commonly apply, in English whatever the question's
+  language. Family Tax Benefit had never been proposed for a family question.
+- *Known item lookup.* A query or expansion that is exactly a payment's name adds
+  that payment's own page and its "Who can get" page as a ranking. BM25 had ranked
+  "Who can get Carer Payment" 25th for the query "Carer Payment".
+- *Page type prior.* Rule pages ("Income test for X", "Assets test for X", "Change of
+  circumstances...", "When you'll get...") rank at 0.5; "Who can get" and landing
+  pages at 1.5; dated disaster event pages get no boost. At most two chunks per page
+  in the top eight, which leaves room for a compound question's second payment.
+Trace went 25 to 29 of 31, and the fixture suite still passes its recall gates.
+
+**Multilingual end to end.** The interface sends the speech recogniser's language
+(`vi-VN`, `pa-Guru-IN`, `yue-Hant-HK`); `language.normalise` maps it, synthesis is
+told the language by name, and an undetected Latin script language falls back to
+"the same language the QUESTION is written in". Verified live in Vietnamese,
+Italian and Arabic: payment names stay English with a translated gloss.
+
+**Interface.** `/api/plan` returns facets, English search phrases and the pages found
+in a few seconds, alongside `/api/answer`, so the wait shows the system working.
+The server now opens a sqlite connection per request for the crawled corpus, so
+the two run in parallel, and sends `Cache-Control: no-cache` on static files.
+Voice input uses the browser's Web Speech API; the page says plainly that the
+browser's speech provider transcribes the audio and this tool never receives it.
+
+## D21. Scorecard 2026-09-18-091008, after D20: better on every gate, still 4 failing
+
+| gate | D19 (070947) | D21 (091008) | gate |
+|---|---|---|---|
+| retrieval_recall (diagnostic) | 0.82 | 0.89 | |
+| payment_recall | 0.74 | 0.76 | 0.90 |
+| compound_recall | 0.58 | 0.67 | 0.80 |
+| citation_faithfulness | 0.84 | 0.93 | 1.00 |
+| fabricated_payment_rate | 0.00 | 0.00 | 0.00 |
+| refusal_precision | 1.00 | 1.00 | 1.00 |
+| over_refusal_rate | 0.00 | 0.00 | 0.05 |
+| latency_p50_s | 25.7 | 11.2 | 6.0 |
+
+Nine answer items fail, and they split cleanly in two:
+- **Retrieval had the page, synthesis returned nothing** (W4, A3, D2, B2, all
+  retrieval recall 1.0, no refusal): the model reads "only when the situation
+  matches" too strictly and empties the payments list. Next lever is the prompt,
+  not the floor or the validator.
+- **Family Tax Benefit still missed at retrieval** on three family questions (F1, F3,
+  F4) and Special Benefit on X4, varying run to run with the expander's phrases.
+  C1 found Carer Payment but not Carer Allowance on this run; it found both in the
+  direct check an hour earlier. Expander variance is now the largest single source
+  of noise in the suite.
+
+## D22. Submission day: an over-cautious prompt, and a demo anyone can open
+
+**Prompt.** D20's "include a payment only when the situation matches" made synthesis
+return an empty payments list even with the right page retrieved (W4, A3, D2, B2 in
+D21). Reworded: include every payment a chunk describes as for people in the person's
+situation, even when individual eligibility cannot be confirmed, since checking
+eligibility is theirs; return an empty list only when no chunk describes a payment
+for their situation. Rechecked live: W4, A3 and C1 now pass. D2 and B2 expect topics
+("compensation", "relationship status") that the payments list cannot hold; that is
+a golden suite shape question, left for the owner.
+
+**Recorded demo.** A public audience cannot run the server, so the interface is also
+published as a page that replays real `/api/plan` and `/api/answer` outputs recorded
+from the pipeline for the eight example chips, and says so in its notice bar.
+Recordings live outside the repository (rule 4). Two of eight were re-recorded once
+because the first run missed a payment the second found (Vietnamese Scenario A,
+Chinese flood); that selection is disclosed here rather than hidden.
