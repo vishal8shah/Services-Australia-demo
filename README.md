@@ -59,7 +59,7 @@ edit. Anything exported in your shell wins over the file.
 Nothing to install. Python 3.11 and the standard library.
 
 ```bash
-make test     # 47 unit tests, offline
+make test     # 99 unit tests, offline
 make eval     # the golden suite against the synthetic fixture corpus
 make serve    # http://127.0.0.1:8000
 ```
@@ -136,7 +136,7 @@ than a measurement. `docs/decisions.md` D7 has the full table.
 |---|---|
 | [`PROTOTYPE_PLAN.md`](PROTOTYPE_PLAN.md) | Scope, architecture, the five day build with exit criteria, risks, publishing posture |
 | [`docs/answer_contract.md`](docs/answer_contract.md) | The response schema, the six validator rules, the refusal classes |
-| [`docs/decisions.md`](docs/decisions.md) | What was chosen and why, including two defects the eval suite caught |
+| [`docs/decisions.md`](docs/decisions.md) | What was chosen and why, D1 to D23, including every defect the evals and tests caught |
 | [`evals/golden_questions.md`](evals/golden_questions.md) | 31 golden questions, 8 refusal probes, 4 over refusal controls, and the release gates |
 | [`evals/golden.json`](evals/golden.json) | The machine readable answer key, kept in step with the markdown by a test |
 | [`evals/runs/`](evals/runs) | Every scorecard, passing or failing |
@@ -147,7 +147,10 @@ than a measurement. `docs/decisions.md` D7 has the full table.
 
 ## Status
 
-Plan committed, pipeline built and tested end to end, Day 0 measurement not yet run.
-The crawl target is not reachable from the environment this was built in, so every
-number in the current scorecard comes from the synthetic corpus. Start at the Day 0
-appendix of the plan.
+Days 0 and 1 done on the real site, 18 September 2026. 379 public pages crawled at the
+site's declared rate, 1,805 passages, OpenAI embeddings, Claude Sonnet 5 writing and
+Claude Haiku 4.5 expanding and judging. Latest real scorecard
+`evals/runs/2026-09-18-091008.md`: 0 fabricated payments, 100% refusal precision, 0%
+over-refusal, faithfulness 0.93; payment recall 0.76, compound recall 0.67 and median
+latency 11.2s are still below their gates, and `docs/decisions.md` D21 names what
+is left. Built with Claude Code.
