@@ -155,3 +155,12 @@ Claude Haiku 4.5 expanding and judging. Latest real scorecard
 over-refusal, faithfulness 0.93; payment recall 0.76, compound recall 0.67 and median
 latency 11.2s are still below their gates, and `docs/decisions.md` D21 names what
 is left. Built with Claude Code.
+
+## Licence
+
+Code and documentation in this repository: [MIT](LICENSE). The fixture corpus is hand written.
+Pages crawled at run time, and any answers drawn from them, are published by Services
+Australia, © Commonwealth of Australia, and reused under CC BY 4.0; they are not in this
+repository and not covered by the MIT licence. The same goes for the recorded demo and the
+film, which live in [vishal8shah/payment-finder](https://github.com/vishal8shah/payment-finder)
+with their own credits. Unofficial prototype, not affiliated with Services Australia.
