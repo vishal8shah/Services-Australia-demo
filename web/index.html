@@ -516,7 +516,7 @@ footer .meta{font:12px var(--mono)}
       (d.query_expansions || []).map(function(f){ return '<span class="chip en">' + esc(f) + '</span>'; }).join("") +
       '</div></details>';
 
-    var head = '<div class="sum"><h2>' + (pays.length ? (pays.length === 1 ? "One payment fits what you described" : pays.length + " payments fit what you described") : "Nothing in the pages fits this clearly") + '</h2>' +
+    var head = '<div class="sum"><h2><bdi>' + (pays.length ? (pays.length === 1 ? "One payment fits what you described" : pays.length + " payments fit what you described") : "Nothing in the pages fits this clearly") + '</bdi></h2>' +
       (window.speechSynthesis ? '<button type="button" class="tool" id="speak"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4zM16 8.5a5 5 0 0 1 0 7M19 5.5a9 9 0 0 1 0 13"/></svg><span>Read aloud</span></button>' : '') +
       '</div>';
 

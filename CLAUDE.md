@@ -65,7 +65,8 @@ The latest real scorecard is `evals/runs/2026-09-18-091008` (D21): every safety 
 passes; payment recall 0.76, compound recall 0.67, faithfulness 0.93 and median
 latency 11.2s are still below their gates. The interface (`web/index.html`) takes
 voice or text in 24 languages and shows retrieval progress from `/api/plan` (D20).
-A recorded, static copy of it is published with GitHub Pages (D22, D23).
+A recorded, static copy of it is published with GitHub Pages (D22, D23), with a
+2-minute film at /film/ (D24).
 
 **Next step, in order:**
 
