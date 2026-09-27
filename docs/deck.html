@@ -26,6 +26,8 @@ body{margin:0;background:#081116;color:var(--text);font-family:var(--serif);over
 .slide{position:absolute;left:0;top:0;width:1600px;height:900px;transform:scale(var(--s,.5));transform-origin:0 0;
   background:var(--paper);color:var(--text);padding:84px 104px 72px;display:flex;flex-direction:column;overflow:hidden;
   border-radius:4px;box-shadow:0 30px 80px rgba(0,0,0,.45)}
+/* display:flex above beats the browser default for [hidden]; only the current slide shows */
+.slide[hidden]{display:none}
 .slide.dark{background:var(--ink);color:var(--on-dark)}
 .slide.dark::before{content:"";position:absolute;inset:0;pointer-events:none;
   background:radial-gradient(900px 600px at 88% 8%,rgba(126,214,178,.13),transparent 60%),
