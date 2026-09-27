@@ -75,7 +75,7 @@ Claude is in the product and built it.
 **Suggested caption, if a short post helps**
 
 Australia is one of the most multilingual countries on earth, and the government's
-payment pages are written in English, organised by payment name. Payment Finder lets
+payment pages are written in English, with each payment on its own pages and rules. Payment Finder lets
 you describe your situation out loud, in your own language, and shows which payments
 apply, with the official page and its date behind every line. It refuses rather than
 guesses: no amounts, no claim status, no personal data. Built with Claude.
