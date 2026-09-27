@@ -28,6 +28,11 @@ government payments apply, with the official page and its date behind every line
 
 **Screenshots or video (optional, recommended)**
 
+The 2-minute film (https://vishal8shah.github.io/payment-finder/film/) is **not** for
+this form. Its narration uses the ElevenLabs free plan, which allows non-commercial use
+with attribution, and the form grants Anthropic a perpetual licence to feature what is
+submitted. Leave the video field empty, or record your own screen as below.
+
 A 60 to 90 second screen recording of the live local version does the most work:
 1. Tap the mic and say Scenario A in Vietnamese or another language.
 2. Pause on the progress panel while the facets, English search phrases and dated

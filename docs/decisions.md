@@ -446,3 +446,18 @@ a separate site repository keeps that line clean while still giving a public URL
 A normal web page, unlike an artifact viewer, can ask for the microphone, so voice
 input works on the published demo. The site is rebuilt from `web/index.html` and
 `docs/deck.html` plus the recordings; the builder lives outside the repo with them.
+
+## D24. A 2-minute film, and a right-to-left defect it caught
+
+A pitch-and-demo film is published at https://vishal8shah.github.io/payment-finder/film/.
+It is built outside this repository with Remotion (rule 4: it holds captures of the live
+site), renders the product with `web/index.html`'s own CSS and the recorded answers, and
+credits every source on the film page: ElevenLabs AI voices (free plan, so the film is not
+attached to the build form), "Carefree" by Kevin MacLeod under CC BY 4.0, and Pexels footage.
+
+Reviewing its frames caught a real defect in the interface. In an Arabic answer the English
+summary heading read "payments fit what you described 2": inside a `dir="rtl"` container
+the leading digit is a weak character, so the bidi algorithm placed it at the end of the
+line. The heading is now wrapped in `<bdi>`, which gives it its own direction and keeps it
+right-aligned. Payment names already carried `dir="ltr"`; this was the one English string
+that did not. Any new English text inside a translated answer needs the same isolation.

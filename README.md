@@ -23,6 +23,7 @@ your own circumstances, use myGov or call Services Australia.
   the English search phrases it used, and the dated official pages it found, while the
   answer is written and checked.
 - **Recorded demo, open it now:** https://vishal8shah.github.io/payment-finder/
+- **The 2-minute film:** https://vishal8shah.github.io/payment-finder/film/
 - **Deck:** https://vishal8shah.github.io/payment-finder/deck.html
 - **Latest real scorecard:** `evals/runs/2026-09-18-091008.md`. 0 fabricated payments,
   100% refusal precision, faithfulness 0.93, and the gates it still fails, stated plainly.
